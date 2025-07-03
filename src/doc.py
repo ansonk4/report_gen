@@ -8,7 +8,7 @@ import numpy as np
 
 doc = DocxTemplate("doc/template.docx")
 school = "High School"
-llm = llm(stop_all = True)
+llm = llm(stop_all = False)
 context = {
     "year": 2025,
     "school": school,
@@ -58,12 +58,7 @@ for i, item in enumerate(top_dislike_major["all"]):
     context[f'unpopular_majors_{i}'] = item
 
 # major conclusion
-prompt = "Wirte a conclusion based on the following data about major perference order of student \n\n"
-prompt += f"top 5 major choices in all student: {top_major['all']} \n"
-prompt += f"top 5 major choices in male student: {top_major['m']} \n"
-prompt += f"top 5 major choices in female student: {top_major['f']} \n"
-prompt += f"top 2 unpopular majors in all student: {top_dislike_major['all']}"
-context["major_conclusion"] = llm.generate(prompt)
+context["major_conclusion"] = llm.generate(prompt_template.major_prompt(top_major, top_dislike_major))
 
 # major_appendic
 target = "major"
@@ -86,19 +81,14 @@ for i, item in enumerate(top_occupation['f']):
     context[f'female_occupation_{i}'] = item 
     
 target = "dislike_occupation"
-target_cols = ['dislike_occupation1', 'dislike_occupation2', 'dislike_occupation3']
+target_cols = ['dislike_occupation1', 'dislike_occupation2', 'dislike_occupation3']     
 group_by_col = "gender"
 top_dislike_occupation = get_topk_groupby(target, target_cols, group_by_col, 2)
 for i, item in enumerate(top_dislike_occupation["all"]):
     context[f'unpopular_occupations_{i}'] = item
     
 # occupations conclusion
-prompt = "Wirte a conclusion based on the following data about occupation perference order of student \n\n"
-prompt += f"top 5 occupation choices in all student: {top_major['all']} \n"
-prompt += f"top 5 occupation choices in male student: {top_major['m']} \n"
-prompt += f"top 5 occupation choices in female student: {top_major['f']} \n"
-prompt += f"top 2 unpopular occupation in all student: {top_dislike_occupation['all']}"
-context["occupations_conclusion"] = llm.generate(prompt)
+context["occupations_conclusion"] = llm.generate(prompt_template.occupations_prompt(top_occupation, top_dislike_occupation))
 
 # occupation appendic
 target = "occupation"

@@ -1,6 +1,32 @@
 # Example prompt
 DEFAULT_PROMPT = "Please enter your query:"
 
+def major_prompt(top_major, top_dislike_major):
+    return f"""
+            Based on the following data about students' major preference rankings, 
+            please write a concise and insightful conclusion that highlights notable trends, 
+            gender differences, and the least preferred majors:
+
+            Top 5 major choices among all students: {top_major['all']}
+            Top 5 major choices among male students: {top_major['m']}
+            Top 5 major choices among female students: {top_major['f']}
+            Top 2 least preferred majors among all students: {top_dislike_major['all']}
+            
+            Focus on similarities and differences between genders, and discuss any unexpected or significant findings.
+            """
+
+def occupations_prompt(top_occupation, top_dislike_occupation):
+    return f"""
+            Based on the following data about students' occupational preferences, write a concise and insightful conclusion that highlights key patterns, gender differences, and notable trends:
+
+            - Top 5 occupations chosen by all students: {top_occupation['all']}
+            - Top 5 occupations chosen by male students: {top_occupation['m']}
+            - Top 5 occupations chosen by female students: {top_occupation['f']}
+            - 2 least preferred occupations among all students: {top_dislike_occupation['all']}
+
+            Focus on similarities and differences between genders, and discuss any unexpected or significant findings.
+            """
+
 def stem_conclusion_prompt(context):
     return f"""
             You are a data analyst tasked with evaluating the impact of STEM education based on survey data. The data includes three tables showing differences between participants who have attended STEM programs and those who have not.

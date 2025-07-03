@@ -1,7 +1,10 @@
 import plotly.graph_objects as go
 
 
-def double_bar_chart(x_values, school_values:dict, avg_values:dict, title, xtitle, x1name, x2name, output_path):
+def double_bar_chart(
+        x_values, school_values:dict, avg_values:dict, 
+        title, xtitle, x1name, 
+        x2name, output_path):
 
     school_values = [school_values[value] for value in x_values]
     avg_values = [avg_values[value] for value in x_values]
