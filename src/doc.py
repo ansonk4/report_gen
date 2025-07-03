@@ -134,6 +134,12 @@ context['stem_total_A'] = context['stem_eng_A'] + context['stem_sci_A']
 context['no_stem_total_A'] = context['no_stem_eng_A'] + context['no_stem_sci_A']
 context['total_diff_A'] = context['eng_diff_A'] + context['sci_diff_A']
 
+x_values = ["Engineering", "Science", "Total"]
+stem_values = {"Engineering": context['stem_eng_A'], "Science": context['stem_sci_A'], "Total": context['stem_total_A']}
+no_stem_values = {"Engineering": context['no_stem_eng_A'], "Science": context['no_stem_sci_A'], "Total": context['no_stem_total_A']}
+plotter.double_bar_chart(x_values, stem_values, no_stem_values, "Major Preference", None, "Have STEM", "No STEM", "img/stem_major.png")
+context["stem_graph_1"] = InlineImage(doc, "img/stem_major.png", width=Mm(80))
+
 # Stem Job
 stem_sci_job = csv_reader.check_class_match("Science", "stem_participation", major=False)
 stem_eng_job = csv_reader.check_class_match("Engineering", "stem_participation", major=False)
@@ -148,6 +154,10 @@ context['total_diff_B'] = context['eng_diff_B'] + context['sci_diff_B']
 
 context['stem_conclusion'] = llm.generate(prompt_template.stem_conclusion_prompt(context))
 
+stem_values = {"Engineering": context['stem_eng_B'], "Science": context['stem_sci_B'], "Total": context['stem_total_B']}
+no_stem_values = {"Engineering": context['no_stem_eng_B'], "Science": context['no_stem_sci_B'], "Total": context['no_stem_total_B']}
+plotter.double_bar_chart(x_values, stem_values, no_stem_values, "Occupation Preference", None, "Have STEM", "No STEM", "img/stem_job.png")
+context["stem_graph_2"] = InlineImage(doc, "img/stem_job.png", width=Mm(80))
 
 # GBA 
 gba_bus_major = csv_reader.check_class_match("Business", "gba_understanding", major=True)
@@ -199,7 +209,7 @@ for item in stress_sources:
     avg_stress_sources_values[item] = context[f"{item}_B"]
 
 
-plotter.double_bar_chart(stress_lv, stress_sources_values, avg_stress_sources_values, f"Stress Sources Distribution: {school} vs Average", "Stress Scources", school, "img/stress_sources.png")
+plotter.double_bar_chart(stress_sources, stress_sources_values, avg_stress_sources_values, f"Stress Sources: {school} vs Average", "Stress Scources", school, 'Average', "img/stress_sources.png")
 context[f"stress_sources_graph"] = InlineImage(doc, "img/stress_sources.png", width=Mm(150))
 
 import plotly.graph_objects as go
@@ -210,7 +220,7 @@ general_stress_lv_distribution = general_school.get_percent("stress_lv", stress_
 for lv in stress_lv:
     context[f"{lv}_A"] = stress_lv_distribution[lv]
     context[f"{lv}_B"] = general_stress_lv_distribution[lv]
-plotter.double_bar_chart(stress_lv, stress_lv_distribution, general_stress_lv_distribution, f"Stress Level: {school} vs Average", "Stress Level", school, "img/stress_level_distribution.png")
+plotter.double_bar_chart(stress_lv, stress_lv_distribution, general_stress_lv_distribution, f"Stress Level: {school} vs Average", "Stress Level", school, 'Average', "img/stress_level_distribution.png")
 context[f"stress_lv_graph"] = InlineImage(doc, "img/stress_level_distribution.png", width=Mm(150))
 
 endure_lv = ["totally_can", "mostly_can", "mostly_cannot", "totally_cannot"]
@@ -219,7 +229,7 @@ general_endure_lv_distribution = general_school.get_percent("endure_lv", endure_
 for lv in endure_lv:
     context[f"{lv}_A"] = endure_lv_distribution[lv]
     context[f"{lv}_B"] = general_endure_lv_distribution[lv]
-plotter.double_bar_chart(endure_lv, endure_lv_distribution, general_endure_lv_distribution, f"Endure Stress Level: {school} vs Average", "Level", school, "img/endure_level_distribution.png")
+plotter.double_bar_chart(endure_lv, endure_lv_distribution, general_endure_lv_distribution, f"Endure Stress Level: {school} vs Average", "Level", school, 'Average', "img/endure_level_distribution.png")
 context[f"endure_graph"] = InlineImage(doc, "img/endure_level_distribution.png", width=Mm(150))
 
 stress_method = ["exercise", "family_communication", "friends_communication", "social_workers", "restructuring_ttb", "video_games", "sleep", "music", "no_idea"]
@@ -228,9 +238,6 @@ for item in stress_method:
     context[f"{item}_B"] = general_school.get_percent(item, [1.0], drop_zero=False)[1.0]
 
 context[f"stress_sources_conclusion"] = llm.generate(prompt_template.stress_sources_prompt(context))
-
-
-
 
 for key, value in context.items():
     if isinstance(value, float):
