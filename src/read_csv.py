@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
 from mapping import get_major_name, get_major_class, get_job_name, get_job_class
-import matplotlib.pyplot as plt
 
 class csv_reader:
     def __init__(self, path:str) -> pd.DataFrame:

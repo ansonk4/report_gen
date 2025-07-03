@@ -7,11 +7,11 @@ class llm:
         # Read API key from a secret file
         load_dotenv()
 
-
         self.client = OpenAI(
             base_url="https://openrouter.ai/api/v1",
             api_key=os.getenv("OPENROUTER_KEY"),
         )
+
         self.stop_all = stop_all
 
     def generate(self, prompt, output=False):
@@ -19,6 +19,8 @@ class llm:
             if output is False:
                 return "[LLM OUTPUT PLACEHOLDER]"
 
+        print("Calling LLM")
+        
         completion = self.client.chat.completions.create(
             extra_body={},
             model="mistralai/mistral-small-3.2-24b-instruct:free",

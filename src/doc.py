@@ -1,21 +1,24 @@
-from docxtpl import DocxTemplate
+from docxtpl import DocxTemplate, InlineImage
+from docx.shared import Mm
 from read_csv import csv_reader
 from conclusion_gen import llm
+import plotter
 import prompt_template
+import numpy as np
 
-doc = DocxTemplate("template.docx")
-
+doc = DocxTemplate("doc/template.docx")
+school = "High School"
 llm = llm(stop_all = True)
 context = {
     "year": 2025,
-    "school": "Springfield High School",
+    "school": school,
     "respondents": 150,
 }
 
-path_all = "school_all.xlsx"
+path_all = "data/school_all.xlsx"
 general_school = csv_reader(path_all)
 
-path = "School 10.xlsx"
+path = "data/School 10.xlsx"
 csv_reader = csv_reader(path)
 
 
@@ -166,7 +169,7 @@ context['bus_diff_B'] = context['gba_bus_B'] - context['no_gba_bus_B']
 context['gba_eng_diff'] = context['gba_eng'] - context['no_gba_eng']
 context['gba_sci_diff_B'] = context['gba_sci_B'] - context['no_gba_sci_B']
 
-context['gba_conclusion'] = llm.generate(prompt_template.gba_conclusion_prompt(context), output=True)
+context['gba_conclusion'] = llm.generate(prompt_template.gba_conclusion_prompt(context))
 
 # Stress
 stress_factor = csv_reader.get_percent("stress_scource", ["personal", "external"])
@@ -174,7 +177,6 @@ general_stress_factor = general_school.get_percent("stress_scource", ["personal"
 
 context['personal_A'], context['external_A'] = stress_factor["personal"], stress_factor["external"]
 context['personal_B'], context['external_B'] = general_stress_factor["personal"], general_stress_factor["external"]
-
 
 stress_sources = [
     "family_expectations",
@@ -194,6 +196,8 @@ for item in stress_sources:
     context[f"{item}_B"] = general_school.get_percent(item, [1.0], drop_zero=False)[1.0]
 
 
+import plotly.graph_objects as go
+
 stress_lv = ["none", "very_low", "low", "moderate", "high", "very_high"]
 stress_lv_distribution = csv_reader.get_percent("stress_lv", stress_lv, drop_zero=False)
 general_stress_lv_distribution = general_school.get_percent("stress_lv", stress_lv, drop_zero=False)
@@ -201,6 +205,9 @@ for lv in stress_lv:
     context[f"{lv}_A"] = stress_lv_distribution[lv]
     context[f"{lv}_B"] = general_stress_lv_distribution[lv]
 
+# plotting
+plotter.double_bar_chart(stress_lv, stress_lv_distribution, general_stress_lv_distribution, f"Stress Level: {school} vs Average", "Stress Level", school, "img/stress_level_distribution.png")
+context[f"stress_lv_graph"] = InlineImage(doc, "img/stress_level_distribution.png", width=Mm(50))
 
 endure_lv = ["totally_can", "mostly_can", "mostly_cannot", "totally_cannot"]
 endure_lv_distribution = csv_reader.get_percent("endure_lv", endure_lv, drop_zero=False)
@@ -208,14 +215,16 @@ general_endure_lv_distribution = general_school.get_percent("endure_lv", endure_
 for lv in endure_lv:
     context[f"{lv}_A"] = endure_lv_distribution[lv]
     context[f"{lv}_B"] = general_endure_lv_distribution[lv]
-
+plotter.double_bar_chart(endure_lv, endure_lv_distribution, general_endure_lv_distribution, f"Endure Stress Level: {school} vs Average", "Level", school, "img/endure_level_distribution.png")
+context[f"endure_graph"] = InlineImage(doc, "img/endure_level_distribution.png")
 
 stress_method = ["exercise", "family_communication", "friends_communication", "social_workers", "restructuring_ttb", "video_games", "sleep", "music", "no_idea"]
 for item in stress_method:
     context[f"{item}_A"] = csv_reader.get_percent(item, [1.0], drop_zero=False)[1.0]
     context[f"{item}_B"] = general_school.get_percent(item, [1.0], drop_zero=False)[1.0]
 
-context[f"stress_sources_conclusion"] = llm.generate(prompt_template.stress_sources_prompt(context), output=True)
+context[f"stress_sources_conclusion"] = llm.generate(prompt_template.stress_sources_prompt(context))
+
 
 
 
@@ -225,5 +234,5 @@ for key, value in context.items():
 
 # Render the document
 doc.render(context)
-doc.save("filled_report.docx")
+doc.save("doc/filled_report.docx")
 print("Document generated successfully: filled_report.docx")
