@@ -5,6 +5,7 @@ def format_label(label: list[str]) -> list[str]:
     label = [s.capitalize() for s in label]
     return [s.replace("_", " ") for s in label]
 
+
 def double_bar_chart(
         x_values, school_values:dict, avg_values:dict, 
         title, xtitle, x1name, 
@@ -13,6 +14,7 @@ def double_bar_chart(
     school_values = [school_values[value] for value in x_values]
     avg_values = [avg_values[value] for value in x_values]
     x_values = format_label(x_values)
+
     fig = go.Figure(data=[
         go.Bar(name=x1name, x=x_values, y=school_values),
         go.Bar(name=x2name, x=x_values, y=avg_values)

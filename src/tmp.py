@@ -348,11 +348,11 @@ class DocumentGenerator:
     
     def _analyze_endurance_levels(self) -> None:
         """Analyze stress endurance levels."""
-        endure_levels = ["totally_can", "mostly_can", "mostly_cannot", "totally_cannot"]
+        endure_levels = ["totally_cannot", "mostly_cannot", "mostly_can", "totally_can"]
         
         endure_lv_distribution = self.school_reader.get_percent("endure_lv", endure_levels, drop_zero=False)
         general_endure_lv_distribution = self.general_reader.get_percent("endure_lv", endure_levels, drop_zero=False)
-        
+
         for level in endure_levels:
             self.context[f"{level}_A"] = endure_lv_distribution[level]
             self.context[f"{level}_B"] = general_endure_lv_distribution[level]
