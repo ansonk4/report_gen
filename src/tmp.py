@@ -1,7 +1,3 @@
-"""
-Refactored document generator for school survey reports.
-"""
-
 from docxtpl import DocxTemplate, InlineImage
 from docx.shared import Mm
 from read_csv import csv_reader
@@ -15,6 +11,10 @@ import logging
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+for name in ["choreographer", "kaleido"]:
+    logging.getLogger(name).setLevel(logging.CRITICAL)
+
+
 
 @dataclass
 class Config:
@@ -26,7 +26,6 @@ class Config:
     image_dir: str = "img"
     year: int = 2025
     school_name: str = "High School"
-    respondents: int = 150
 
 
 class DocumentGenerator:
@@ -35,37 +34,34 @@ class DocumentGenerator:
     def __init__(self, config: Config):
         self.config = config
         self.doc = DocxTemplate(config.template_path)
-        self.llm = llm(stop_all=False)
+        self.llm = llm(stop_all=True)
         self.school_reader = csv_reader(config.school_data_path)
         self.general_reader = csv_reader(config.general_data_path)
         self.context = self._initialize_context()
-    
+        self.school = config.school_name
+
     def _initialize_context(self) -> Dict[str, Any]:
         """Initialize the document context with basic information."""
         return {
             "year": self.config.year,
             "school": self.config.school_name,
-            "respondents": self.config.respondents,
+            "respondents": self.school_reader.sample_size,
         }
     
     def generate_report(self) -> None:
         """Generate the complete report."""
         logger.info("Starting report generation...")
         
-        try:
-            self._process_majors()
-            self._process_occupations()
-            self._process_stem_analysis()
-            self._process_gba_analysis()
-            self._process_stress_analysis()
-            self._format_percentages()
-            self._render_document()
+        self._process_majors()
+        self._process_occupations()
+        self._process_stem_analysis()
+        self._process_gba_analysis()
+        self._process_stress_analysis()
+        self._format_percentages()
+        self._render_document()
+        
+        logger.info(f"Report generated successfully: {self.config.output_path}")
             
-            logger.info(f"Report generated successfully: {self.config.output_path}")
-            
-        except Exception as e:
-            logger.error(f"Error generating report: {e}")
-            raise
     
     def _get_topk_groupby(self, target: str, target_cols: List[str], 
                          group_by_col: str, k: int) -> Dict[str, List[str]]:
@@ -87,124 +83,139 @@ class DocumentGenerator:
     
     def _process_majors(self) -> None:
         """Process major preference data."""
-        logger.info("Processing major preferences...")
-        
-        # Main major analysis
-        target_cols = ['target_major1', 'target_major2', 'target_major3']
-        top_majors = self._get_topk_groupby("major", target_cols, "gender", 5)
-        
-        # Populate context with major data
-        self._populate_context_with_topk(top_majors, "major", "male_major", "female_major")
-        
-        # Disliked majors
-        dislike_cols = ['dislike_major1', 'dislike_major2', 'dislike_major3']
-        top_dislike_majors = self._get_topk_groupby("dislike_major", dislike_cols, "gender", 2)
-        
-        for i, item in enumerate(top_dislike_majors["all"]):
-            self.context[f'unpopular_majors_{i}'] = item
-        
-        # Generate conclusion
-        self.context["major_conclusion"] = self.llm.generate(
-            prompt_template.major_prompt(top_majors, top_dislike_majors)
-        )
-        
-        # Extended major data for appendix
-        extended_majors = self._get_topk_groupby("major", target_cols, "gender", 7)
-        for i, item in enumerate(extended_majors["all"]):
-            self.context[f'top_major_{i}'] = item
+        try:
+            logger.info("Processing major preferences...")
+    
+            # Main major analysis
+            target_cols = ['target_major1', 'target_major2', 'target_major3']
+            top_majors = self._get_topk_groupby("major", target_cols, "gender", 5)
+            
+            # Populate context with major data
+            self._populate_context_with_topk(top_majors, "major", "male_major", "female_major")
+            
+            # Disliked majors
+            dislike_cols = ['dislike_major1', 'dislike_major2', 'dislike_major3']
+            top_dislike_majors = self._get_topk_groupby("dislike_major", dislike_cols, "gender", 2)
+            
+            for i, item in enumerate(top_dislike_majors["all"]):
+                self.context[f'unpopular_majors_{i}'] = item
+            
+            # Generate conclusion
+            self.context["major_conclusion"] = self.llm.generate(
+                prompt_template.major_prompt(top_majors, top_dislike_majors)
+            )
+            
+            # Extended major data for appendix
+            extended_majors = self._get_topk_groupby("major", target_cols, "gender", 7)
+            for i, item in enumerate(extended_majors["all"]):
+                self.context[f'top_major_{i}'] = item
+
+        except Exception as e:
+            logger.error(f"Error processing major preferences: {e}")
     
     def _process_occupations(self) -> None:
         """Process occupation preference data."""
-        logger.info("Processing occupation preferences...")
+        try:
+            logger.info("Processing occupation preferences...")
+            
+            # Main occupation analysis
+            target_cols = ['target_occupation1', 'target_occupation2', 'target_occupation3']
+            top_occupations = self._get_topk_groupby("occupation", target_cols, "gender", 5)
+            
+            # Populate context with occupation data
+            self._populate_context_with_topk(top_occupations, "occupation", "male_occupation", "female_occupation")
+            
+            # Disliked occupations
+            dislike_cols = ['dislike_occupation1', 'dislike_occupation2', 'dislike_occupation3']
+            top_dislike_occupations = self._get_topk_groupby("dislike_occupation", dislike_cols, "gender", 2)
+            
+            for i, item in enumerate(top_dislike_occupations["all"]):
+                self.context[f'unpopular_occupations_{i}'] = item
+            
+            # Generate conclusion
+            self.context["occupations_conclusion"] = self.llm.generate(
+                prompt_template.occupations_prompt(top_occupations, top_dislike_occupations)
+            )
+            
+            # Extended occupation data for appendix
+            extended_occupations = self._get_topk_groupby("occupation", target_cols, "gender", 7)
+            for i, item in enumerate(extended_occupations["all"]):
+                self.context[f'top_occupation_{i}'] = item
+        except Exception as e:
+            logger.error(f"Error processing occupation preferences: {e}")
         
-        # Main occupation analysis
-        target_cols = ['target_occupation1', 'target_occupation2', 'target_occupation3']
-        top_occupations = self._get_topk_groupby("occupation", target_cols, "gender", 5)
-        
-        # Populate context with occupation data
-        self._populate_context_with_topk(top_occupations, "occupation", "male_occupation", "female_occupation")
-        
-        # Disliked occupations
-        dislike_cols = ['dislike_occupation1', 'dislike_occupation2', 'dislike_occupation3']
-        top_dislike_occupations = self._get_topk_groupby("dislike_occupation", dislike_cols, "gender", 2)
-        
-        for i, item in enumerate(top_dislike_occupations["all"]):
-            self.context[f'unpopular_occupations_{i}'] = item
-        
-        # Generate conclusion
-        self.context["occupations_conclusion"] = self.llm.generate(
-            prompt_template.occupations_prompt(top_occupations, top_dislike_occupations)
-        )
-        
-        # Extended occupation data for appendix
-        extended_occupations = self._get_topk_groupby("occupation", target_cols, "gender", 7)
-        for i, item in enumerate(extended_occupations["all"]):
-            self.context[f'top_occupation_{i}'] = item
-    
     def _process_stem_analysis(self) -> None:
         """Process STEM-related analysis."""
-        logger.info("Processing STEM analysis...")
-        
-        # STEM skills analysis
-        skill_categories = ["leadership", "teamwork", "creativity", "sci_knowledge", "problem_solving"]
-        skill_mapping = {
-            "leadership": ("leadership_strong", "leadership_par"),
-            "teamwork": ("teamwork_strong", "teamwork_par"),
-            "creativity": ("creative_strong", "creative_par"),
-            "sci_knowledge": ("knowledge_strong", "knowledge_par"),
-            "problem_solving": ("prob_solving_strong", "prob_solving_par")
-        }
-        
-        for skill in skill_categories:
-            percentages = self.school_reader.get_percent(skill, [1.0, 2.0])
-            strong_key, par_key = skill_mapping[skill]
-            self.context[strong_key] = percentages[1]
-            self.context[par_key] = percentages[2]
-        
-        # STEM major preferences
-        self._analyze_stem_preferences("major", True, "_A", "img/stem_major.png", "stem_graph_1")
-        
-        # STEM job preferences
-        self._analyze_stem_preferences("occupation", False, "_B", "img/stem_job.png", "stem_graph_2")
-        
-        # Generate STEM conclusion
-        self.context['stem_conclusion'] = self.llm.generate(
-            prompt_template.stem_conclusion_prompt(self.context)
-        )
+        try:
+            logger.info("Processing STEM analysis...")
+            
+            # STEM skills analysis
+            skill_categories = ["leadership", "teamwork", "creativity", "sci_knowledge", "problem_solving"]
+            skill_mapping = {
+                "leadership": ("leadership_strong", "leadership_par"),
+                "teamwork": ("teamwork_strong", "teamwork_par"),
+                "creativity": ("creative_strong", "creative_par"),
+                "sci_knowledge": ("knowledge_strong", "knowledge_par"),
+                "problem_solving": ("prob_solving_strong", "prob_solving_par")
+            }
+            
+            for skill in skill_categories:
+                percentages = self.school_reader.get_percent(skill, [1.0, 2.0])
+                strong_key, par_key = skill_mapping[skill]
+                self.context[strong_key] = percentages[1]
+                self.context[par_key] = percentages[2]
+            
+            # STEM major preferences
+            self._analyze_stem_preferences("major", True, "_A", "img/stem_major.png", "stem_graph_1")
+            
+            # STEM job preferences
+            self._analyze_stem_preferences("occupation", False, "_B", "img/stem_job.png", "stem_graph_2")
+            
+            # Generate STEM conclusion
+            self.context['stem_conclusion'] = self.llm.generate(
+                prompt_template.stem_conclusion_prompt(self.context)
+            )
+
+        except Exception as e:
+            logger.error(f"Error processing STEM analysis: {e}")
     
     def _process_gba_analysis(self) -> None:
         """Process GBA (Global Business Administration) analysis."""
-        logger.info("Processing GBA analysis...")
+        try:
+            logger.info("Processing GBA analysis...")
         
-        # GBA major analysis
-        gba_bus_major = self.school_reader.check_class_match("Business", "gba_understanding", major=True)
-        gba_sci_major = self.school_reader.check_class_match("Science", "gba_understanding", major=True)
-        
-        self.context['gba_bus_A'], self.context['no_gba_bus_A'] = gba_bus_major
-        self.context['gba_sci_A'], self.context['no_gba_sci_A'] = gba_sci_major
-        self.context['bus_diff_A'] = self.context['gba_bus_A'] - self.context['no_gba_bus_A']
-        self.context['gba_sci_diff_A'] = self.context['gba_sci_A'] - self.context['no_gba_sci_A']
-        
-        # GBA job analysis
-        gba_jobs = {
-            "Business": self.school_reader.check_class_match("Business", "gba_understanding", major=False),
-            "Engineering": self.school_reader.check_class_match("Engineering", "gba_understanding", major=False),
-            "Science": self.school_reader.check_class_match("Science", "gba_understanding", major=False)
-        }
-        
-        self.context['gba_bus_B'], self.context['no_gba_bus_B'] = gba_jobs["Business"]
-        self.context['gba_eng'], self.context['no_gba_eng'] = gba_jobs["Engineering"]
-        self.context['gba_sci_B'], self.context['no_gba_sci_B'] = gba_jobs["Science"]
-        
-        # Calculate differences
-        self.context['bus_diff_B'] = self.context['gba_bus_B'] - self.context['no_gba_bus_B']
-        self.context['gba_eng_diff'] = self.context['gba_eng'] - self.context['no_gba_eng']
-        self.context['gba_sci_diff_B'] = self.context['gba_sci_B'] - self.context['no_gba_sci_B']
-        
-        # Generate GBA conclusion
-        self.context['gba_conclusion'] = self.llm.generate(
-            prompt_template.gba_conclusion_prompt(self.context)
-        )
+            # GBA major analysis
+            gba_bus_major = self.school_reader.check_class_match("Business", "gba_understanding", major=True)
+            gba_sci_major = self.school_reader.check_class_match("Science", "gba_understanding", major=True)
+            
+            self.context['gba_bus_A'], self.context['no_gba_bus_A'] = gba_bus_major
+            self.context['gba_sci_A'], self.context['no_gba_sci_A'] = gba_sci_major
+            self.context['bus_diff_A'] = self.context['gba_bus_A'] - self.context['no_gba_bus_A']
+            self.context['gba_sci_diff_A'] = self.context['gba_sci_A'] - self.context['no_gba_sci_A']
+            
+            # GBA job analysis
+            gba_jobs = {
+                "Business": self.school_reader.check_class_match("Business", "gba_understanding", major=False),
+                "Engineering": self.school_reader.check_class_match("Engineering", "gba_understanding", major=False),
+                "Science": self.school_reader.check_class_match("Science", "gba_understanding", major=False)
+            }
+            
+            self.context['gba_bus_B'], self.context['no_gba_bus_B'] = gba_jobs["Business"]
+            self.context['gba_eng'], self.context['no_gba_eng'] = gba_jobs["Engineering"]
+            self.context['gba_sci_B'], self.context['no_gba_sci_B'] = gba_jobs["Science"]
+            
+            # Calculate differences
+            self.context['bus_diff_B'] = self.context['gba_bus_B'] - self.context['no_gba_bus_B']
+            self.context['gba_eng_diff'] = self.context['gba_eng'] - self.context['no_gba_eng']
+            self.context['gba_sci_diff_B'] = self.context['gba_sci_B'] - self.context['no_gba_sci_B']
+            
+            # Generate GBA conclusion
+            self.context['gba_conclusion'] = self.llm.generate(
+                prompt_template.gba_conclusion_prompt(self.context)
+            )
+        except Exception as e:
+            logger.error(f"Error processing GBA analysis: {e}")
+
     
     def _process_stress_analysis(self) -> None:
         """Process stress-related analysis."""
@@ -361,14 +372,19 @@ class DocumentGenerator:
             "exercise", "family_communication", "friends_communication", "social_workers",
             "restructuring_ttb", "video_games", "sleep", "music", "no_idea"
         ]
-        
+        school_values = {}
         for method in stress_methods:
             school_value = self.school_reader.get_percent(method, [1.0], drop_zero=False)[1.0]
             general_value = self.general_reader.get_percent(method, [1.0], drop_zero=False)[1.0]
-            
+            school_values[method] = school_value
             self.context[f"{method}_A"] = school_value
             self.context[f"{method}_B"] = general_value
-    
+
+        plotter.pie_chart(stress_methods, school_values, f"Stress Relieve Method: {self.school}", "img/stress_method.png")
+        self.context["stress_graph"] = InlineImage(
+            self.doc, "img/stress_method.png", width=Mm(150)
+        )
+
     def _format_percentages(self) -> None:
         """Format all float values as percentages."""
         for key, value in self.context.items():
