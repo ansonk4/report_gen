@@ -15,7 +15,6 @@ for name in ["choreographer", "kaleido"]:
     logging.getLogger(name).setLevel(logging.CRITICAL)
 
 
-
 @dataclass
 class Config:
     """Configuration settings for the document generator."""
@@ -165,6 +164,9 @@ class DocumentGenerator:
                 self.context[strong_key] = percentages[1]
                 self.context[par_key] = percentages[2]
             
+            self.context["have_stem"]  = self.school_reader.df['stem_participation'].sum()
+            self.context["no_stem"]  = (~self.school_reader.df['stem_participation']).sum()
+
             # STEM major preferences
             self._analyze_stem_preferences("major", True, "_A", "img/stem_major.png", "stem_graph_1")
             
