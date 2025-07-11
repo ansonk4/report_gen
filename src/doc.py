@@ -91,6 +91,9 @@ class DocumentGenerator:
         # Calculate percentage for each factor
         factor_percent = []
         for factor in factors:
+            if factor not in self.school_reader.df.columns:
+                factor_percent.append(None)
+                continue
             percents = self.school_reader.get_percent(f"{factor}{suffix}", [1.0, 2.0], drop_zero=False)
             factor_percent.append(percents[1.0] + percents[2.0])
 
