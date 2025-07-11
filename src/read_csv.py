@@ -3,17 +3,21 @@ import numpy as np
 from mapping import get_major_name, get_major_class, get_job_name, get_job_class
 
 class csv_reader:
-    def __init__(self, path:str) -> pd.DataFrame:
+    def __init__(self, path:str, school_id=None) -> pd.DataFrame:
         df = pd.read_excel(path, header=2)
 
         df = df.apply(lambda x: pd.to_numeric(x, errors='coerce'))
         df = df.replace(999, np.nan)
+        
+        if school_id:
+            df = df.loc[df["school_id"] == school_id] 
 
         self.sample_size = len(df)
         self.raw_df = df.copy()
 
         df['gender'] = df['gender'].replace({1.0: 'm', 2.0: 'f'})
-        df['gba_understanding'] = df['gba_understanding'].replace({1.0: False, 2.0: False, 3.0: True, 4.0: True}).astype(bool)
+        # df['gba_understanding'] = df['gba_understanding'].replace({1.0: False, 2.0: False, 3.0: True, 4.0: True}).astype(bool)
+        df['gba_understanding'] = df['gba_understanding'].replace({1.0: False, 2.0: True}).astype(bool)
         df['stem_participation'] = df['stem_participation'].replace({1.0: True, 2.0: False}).astype(bool)
         df['stress_scource'] = df['stress_scource'].replace({1.0: "personal", 2.0: "external"}).astype(str)
         df['stress_lv'] = df['stress_lv'].replace({1.0: "none", 2.0:"very_low", 3.0:"low", 4.0: "moderate", 5.0: "high", 6.0: "very_high"}).astype(str)
@@ -66,7 +70,7 @@ class csv_reader:
         '''
         Create a column indicating whether the row's major/job preference belongs to the target class,
         and return the distribution of this column grouped by the specified groupby column.
-        The "groupby" column should be a boolean collumn
+        The "groupby" column is a boolean collumn
         '''
         matches = []
         if major:
@@ -119,32 +123,11 @@ class csv_reader:
    
     
 if __name__ == "__main__":
-    csv_reader = csv_reader()
-    csv_reader.read("School 10.xlsx")
-    group_by_col = "gender"
+    # csv_reader = csv_reader("data/2024 Final Data2.xlsx")
+    csv = csv_reader("data/2024 Final Data2.xlsx", 10)
+    gba_bus_major = csv.check_class_match("Business", "gba_understanding", major=True)
+    gba_sci_major = csv.check_class_match("Science", "gba_understanding", major=True)
+    print
 
-
-    target = "dislike_major"
-    target_cols = ['dislike_major1', 'dislike_major2', 'dislike_major3']
-
-    def get_topk_groupby(target:str, target_cols:list, group_by_col:str) -> dict:
-        combined_df = csv_reader.combine_target(target_cols, target)
-        dis_df = csv_reader.get_distribution(combined_df, target, group_by_col)
-
-        groupby_results = csv_reader.sort_distribution(dis_df)
-        all_result = csv_reader.get_distribution(combined_df, target)
-        
-        def get_topk(df, k=5):
-            return df[target].head(5).tolist()
-
-        ret = {"all": get_topk(all_result, 5)}
-        for group, df in groupby_results.items():
-            ret[group] = get_topk(df, 5)
-            
-        return ret
-    
-
-    ret = get_topk_groupby(target, target_cols, group_by_col)
-    print(ret)
 
 

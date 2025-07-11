@@ -19,12 +19,15 @@ for name in ["choreographer", "kaleido"]:
 class Config:
     """Configuration settings for the document generator."""
     template_path: str = "doc/template.docx"
-    output_path: str = "doc/filled_report.docx"
-    school_data_path: str = "data/School 10.xlsx"
-    general_data_path: str = "data/school_all.xlsx"
+    output_path: str = "doc/filled_report_24_10.docx"
+    # school_data_path: str = "data/School 10.xlsx"
+    school_data_path: str = None
+    general_data_path: str = "data/2024 Final Data2.xlsx"
+    # general_data_path: str = "data/school_all.xlsx"
     image_dir: str = "img"
     year: int = 2025
     school_name: str = "High School"
+    school_id: int = 10
 
 
 class DocumentGenerator:
@@ -34,7 +37,11 @@ class DocumentGenerator:
         self.config = config
         self.doc = DocxTemplate(config.template_path)
         self.llm = llm(stop_all=True)
-        self.school_reader = csv_reader(config.school_data_path)
+        if config.school_data_path is None:
+            self.school_reader = csv_reader(config.general_data_path, config.school_id)
+        else:
+            self.school_reader = csv_reader(config.school_data_path)
+
         self.general_reader = csv_reader(config.general_data_path)
         self.context = self._initialize_context()
         self.school = config.school_name
@@ -189,7 +196,7 @@ class DocumentGenerator:
             # GBA major analysis
             gba_bus_major = self.school_reader.check_class_match("Business", "gba_understanding", major=True)
             gba_sci_major = self.school_reader.check_class_match("Science", "gba_understanding", major=True)
-            
+
             self.context['gba_bus_A'], self.context['no_gba_bus_A'] = gba_bus_major
             self.context['gba_sci_A'], self.context['no_gba_sci_A'] = gba_sci_major
             self.context['bus_diff_A'] = self.context['gba_bus_A'] - self.context['no_gba_bus_A']
