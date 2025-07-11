@@ -22,7 +22,7 @@ class Config:
     output_path: str = "doc/filled_report_24_10.docx"
     # school_data_path: str = "data/School 10.xlsx"
     school_data_path: str = None
-    general_data_path: str = "data/2024 Final Data2.xlsx"
+    general_data_path: str = "data/school_all.xlsx"
     # general_data_path: str = "data/school_all.xlsx"
     image_dir: str = "img"
     year: int = 2025
@@ -86,7 +86,24 @@ class DocumentGenerator:
             ret[group] = get_topk(df, k)
         
         return ret
-    
+
+    def _plot_factors_graph(self, factors: list[str], title: str, suffix: str, output_path: str) -> None:
+        # Calculate percentage for each factor
+        factor_percent = []
+        for factor in factors:
+            percents = self.school_reader.get_percent(f"{factor}{suffix}", [1.0, 2.0], drop_zero=False)
+            factor_percent.append(percents[1.0] + percents[2.0])
+
+        # Plot bar chart for major factors
+        plotter.bar_chart(
+            x_values=factors,
+            y_values=factor_percent,
+            title=title,
+            xtitle="Factors",
+            ytitle="Percentage",
+            output_path=output_path
+        )
+
     def _process_majors(self) -> None:
         """Process major preference data."""
         try:
@@ -115,6 +132,17 @@ class DocumentGenerator:
             extended_majors = self._get_topk_groupby("major", target_cols, "gender", 7)
             for i, item in enumerate(extended_majors["all"]):
                 self.context[f'top_major_{i}'] = item
+
+            # Plot major factor graph
+            major_factors = [
+                "personal_interests", "institute", "tuition",
+                "scholarship", "career_prospect", "peers_and_teacher",
+                "family", "salary", "DSE_result",
+                "high_school_electives"
+            ]
+            output_path = "img/major_factors.png"
+            self._plot_factors_graph(major_factors, "Major Selection Factors", "_A", output_path)
+            self.context["major_factors_graph"] = InlineImage(self.doc, output_path, width=Mm(150))
 
         except Exception as e:
             logger.error(f"Error processing major preferences: {e}")
@@ -147,6 +175,18 @@ class DocumentGenerator:
             extended_occupations = self._get_topk_groupby("occupation", target_cols, "gender", 7)
             for i, item in enumerate(extended_occupations["all"]):
                 self.context[f'top_occupation_{i}'] = item
+
+             # Plot major factor graph
+            occupation_factors = [
+                "personal_ability", "personal_interest", "sense_of_achievement", "family",
+                "interpresonal_relationship", "job_nature", "remote_work", "worload",
+                "working_environment", "salary_and_benefit", "promotion_opportunites",
+                "career_prospect", "social_contribution", "social_status"
+            ]
+            output_path = "img/occpuation_factors.png"
+            self._plot_factors_graph(occupation_factors, "Occpuation Selection Factors", "_B", output_path)
+            self.context["occupation_factors_graph"] = InlineImage(self.doc, output_path, width=Mm(150))
+            
         except Exception as e:
             logger.error(f"Error processing occupation preferences: {e}")
         

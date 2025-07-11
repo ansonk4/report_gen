@@ -49,3 +49,25 @@ def pie_chart(labels: list[str], values: dict[str, float], title: str, output_pa
         margin=dict(t=60, b=60, l=60, r=120)  # Add more right margin for labels
     )
     fig.write_image(output_path)
+
+def bar_chart(x_values: list[str], y_values: list[float], title: str, xtitle: str, ytitle: str, output_path: str):
+    # Sort by y_values descending
+    x_values = format_label(x_values)
+    sorted_pairs = sorted(zip(x_values, y_values), key=lambda x: x[1], reverse=False)
+    x_values, y_values = zip(*sorted_pairs)
+    x_values = format_label(list(x_values))
+    fig = go.Figure(data=[
+        go.Bar(
+            x=y_values,
+            y=x_values,
+            orientation='h',
+            text=[f"{v:.2f}%" for v in y_values],
+            textposition='auto'
+        )
+    ])
+    fig.update_layout(
+        title=title,
+        xaxis_title=ytitle,
+        yaxis_title=xtitle,
+    )
+    fig.write_image(output_path)
