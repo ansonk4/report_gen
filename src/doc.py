@@ -14,20 +14,19 @@ logger = logging.getLogger(__name__)
 for name in ["choreographer", "kaleido"]:
     logging.getLogger(name).setLevel(logging.CRITICAL)
 
-
 @dataclass
 class Config:
     """Configuration settings for the document generator."""
     template_path: str = "doc/template.docx"
-    output_path: str = "doc/filled_report_24_10.docx"
+    output_path: str = "doc/filled_report.docx"
     # school_data_path: str = "data/School 10.xlsx"
     school_data_path: str = None
-    general_data_path: str = "data/school_all.xlsx"
     # general_data_path: str = "data/school_all.xlsx"
+    general_data_path: str = "data/2024 Final Data2.xlsx"
     image_dir: str = "img"
-    year: int = 2025
+    year: int = 2024
     school_name: str = "High School"
-    school_id: int = 10
+    school_id: int = 12
 
 
 class DocumentGenerator:
@@ -56,7 +55,7 @@ class DocumentGenerator:
     
     def generate_report(self) -> None:
         """Generate the complete report."""
-        logger.info("Starting report generation...")
+        logger.info(f"Starting report generation for school {self.school} {self.config.school_id}...")
         
         self._process_majors()
         self._process_occupations()
@@ -74,7 +73,7 @@ class DocumentGenerator:
         """Get top-k items grouped by a specific column."""
         combined_df = self.school_reader.combine_target(target_cols, target)
         dis_df = self.school_reader.get_distribution(combined_df, target, group_by_col)
-        
+
         groupby_results = self.school_reader.sort_distribution(dis_df)
         all_result = self.school_reader.get_distribution(combined_df, target)
         
@@ -91,8 +90,8 @@ class DocumentGenerator:
         # Calculate percentage for each factor
         factor_percent = []
         for factor in factors:
-            if factor not in self.school_reader.df.columns:
-                factor_percent.append(None)
+            if f"{factor}{suffix}" not in self.school_reader.df.columns:
+                factor_percent.append(0)
                 continue
             percents = self.school_reader.get_percent(f"{factor}{suffix}", [1.0, 2.0], drop_zero=False)
             factor_percent.append(percents[1.0] + percents[2.0])
@@ -109,46 +108,46 @@ class DocumentGenerator:
 
     def _process_majors(self) -> None:
         """Process major preference data."""
-        try:
-            logger.info("Processing major preferences...")
-    
-            # Main major analysis
-            target_cols = ['target_major1', 'target_major2', 'target_major3']
-            top_majors = self._get_topk_groupby("major", target_cols, "gender", 5)
-            
-            # Populate context with major data
-            self._populate_context_with_topk(top_majors, "major", "male_major", "female_major")
-            
-            # Disliked majors
-            dislike_cols = ['dislike_major1', 'dislike_major2', 'dislike_major3']
-            top_dislike_majors = self._get_topk_groupby("dislike_major", dislike_cols, "gender", 2)
-            
-            for i, item in enumerate(top_dislike_majors["all"]):
-                self.context[f'unpopular_majors_{i}'] = item
-            
-            # Generate conclusion
-            self.context["major_conclusion"] = self.llm.generate(
-                prompt_template.major_prompt(top_majors, top_dislike_majors)
-            )
-            
-            # Extended major data for appendix
-            extended_majors = self._get_topk_groupby("major", target_cols, "gender", 7)
-            for i, item in enumerate(extended_majors["all"]):
-                self.context[f'top_major_{i}'] = item
+        # try:
+        logger.info("Processing major preferences...")
 
-            # Plot major factor graph
-            major_factors = [
-                "personal_interests", "institute", "tuition",
-                "scholarship", "career_prospect", "peers_and_teacher",
-                "family", "salary", "DSE_result",
-                "high_school_electives"
-            ]
-            output_path = "img/major_factors.png"
-            self._plot_factors_graph(major_factors, "Major Selection Factors", "_A", output_path)
-            self.context["major_factors_graph"] = InlineImage(self.doc, output_path, width=Mm(150))
+        # Main major analysis
+        target_cols = ['target_major1', 'target_major2', 'target_major3']
+        top_majors = self._get_topk_groupby("major", target_cols, "gender", 5)
 
-        except Exception as e:
-            logger.error(f"Error processing major preferences: {e}")
+        # Populate context with major data
+        self._populate_context_with_topk(top_majors, "major", "male_major", "female_major")
+        
+        # Disliked majors
+        dislike_cols = ['dislike_major1', 'dislike_major2', 'dislike_major3']
+        top_dislike_majors = self._get_topk_groupby("dislike_major", dislike_cols, "gender", 2)
+        
+        for i, item in enumerate(top_dislike_majors["all"]):
+            self.context[f'unpopular_majors_{i}'] = item
+        
+        # Generate conclusion
+        self.context["major_conclusion"] = self.llm.generate(
+            prompt_template.major_prompt(top_majors, top_dislike_majors)
+        )
+            
+        # Extended major data for appendix
+        extended_majors = self._get_topk_groupby("major", target_cols, "gender", 7)
+        for i, item in enumerate(extended_majors["all"]):
+            self.context[f'top_major_{i}'] = item
+
+        # Plot major factor graph
+        major_factors = [
+            "personal_interests", "institute", "tuition",
+            "scholarship", "career_prospect", "peers_and_teacher",
+            "family", "salary", "DSE_result",
+            "high_school_electives"
+        ]
+        output_path = "img/major_factors.png"
+        self._plot_factors_graph(major_factors, "Major Selection Factors", "_A", output_path)
+        self.context["major_factors_graph"] = InlineImage(self.doc, output_path, width=Mm(150))
+
+        # except Exception as e:
+        #     logger.error(f"Error processing major preferences: {e}")
     
     def _process_occupations(self) -> None:
         """Process occupation preference data."""
@@ -302,11 +301,15 @@ class DocumentGenerator:
         """Populate context with top-k data for all, male, and female categories."""
         for i, item in enumerate(data["all"]):
             self.context[f'{all_key}_{i}'] = item
-        for i, item in enumerate(data["m"]):
-            self.context[f'{male_key}_{i}'] = item
-        for i, item in enumerate(data["f"]):
-            self.context[f'{female_key}_{i}'] = item
-    
+
+        if "m" in data:
+            for i, item in enumerate(data["m"]):
+                self.context[f'{male_key}_{i}'] = item
+
+        if "f" in data:
+            for i, item in enumerate(data["f"]):
+                self.context[f'{female_key}_{i}'] = item
+
     def _analyze_stem_preferences(self, category: str, is_major: bool, suffix: str, 
                                  image_path: str, graph_key: str) -> None:
         """Analyze STEM preferences for majors or occupations."""
@@ -367,7 +370,7 @@ class DocumentGenerator:
         plotter.double_bar_chart(
             stress_sources, stress_sources_values, avg_stress_sources_values,
             f"Stress Sources: {self.config.school_name} vs Average", "Stress Sources",
-            self.config.school_name, 'Average', "img/stress_sources.png"
+            "Target School", 'Average', "img/stress_sources.png"
         )
         
         self.context["stress_sources_graph"] = InlineImage(
@@ -389,7 +392,7 @@ class DocumentGenerator:
         plotter.double_bar_chart(
             stress_levels, stress_lv_distribution, general_stress_lv_distribution,
             f"Stress Level: {self.config.school_name} vs Average", "Stress Level",
-            self.config.school_name, 'Average', "img/stress_level_distribution.png"
+            "Target School", 'Average', "img/stress_level_distribution.png"
         )
         
         self.context["stress_lv_graph"] = InlineImage(
@@ -411,7 +414,7 @@ class DocumentGenerator:
         plotter.double_bar_chart(
             endure_levels, endure_lv_distribution, general_endure_lv_distribution,
             f"Endure Stress Level: {self.config.school_name} vs Average", "Level",
-            self.config.school_name, 'Average', "img/endure_level_distribution.png"
+            "Target School", 'Average', "img/endure_level_distribution.png"
         )
         
         self.context["endure_graph"] = InlineImage(

@@ -16,8 +16,8 @@ class csv_reader:
         self.raw_df = df.copy()
 
         df['gender'] = df['gender'].replace({1.0: 'm', 2.0: 'f'})
-        df['gba_understanding'] = df['gba_understanding'].replace({1.0: False, 2.0: False, 3.0: True, 4.0: True}).astype(bool)
-        # df['gba_understanding'] = df['gba_understanding'].replace({1.0: False, 2.0: True}).astype(bool)
+        # df['gba_understanding'] = df['gba_understanding'].replace({1.0: False, 2.0: False, 3.0: True, 4.0: True}).astype(bool)
+        df['gba_understanding'] = df['gba_understanding'].replace({1.0: False, 2.0: True}).astype(bool)
         df['stem_participation'] = df['stem_participation'].replace({1.0: True, 2.0: False}).astype(bool)
         df['stress_scource'] = df['stress_scource'].replace({1.0: "personal", 2.0: "external"}).astype(str)
         df['stress_lv'] = df['stress_lv'].replace({1.0: "none", 2.0:"very_low", 3.0:"low", 4.0: "moderate", 5.0: "high", 6.0: "very_high"}).astype(str)
@@ -47,7 +47,7 @@ class csv_reader:
     def get_distribution(self, combined_df, target: str, group_by_col: str = None):
         if combined_df is None:
             combined_df = self.df
-
+            
         if group_by_col:
             dis_df = pd.crosstab(combined_df[target], combined_df[group_by_col])
 
@@ -92,8 +92,11 @@ class csv_reader:
         # Get the proportion of that have the target class
         distribution = distribution[distribution[f"have_{target_class}"] == True]
         
-        have_groupby = distribution[distribution[groupby] == True]['proportion'].values[0].item()
-        no_groupby = distribution[distribution[groupby] == False]['proportion'].values[0].item()
+        have_groupby = distribution[(distribution[groupby] == True)]['proportion'].values
+        have_groupby = have_groupby[0].item() if len(have_groupby) > 0 else 0.0
+
+        no_groupby = distribution[(distribution[groupby] == False)]['proportion'].values
+        no_groupby = no_groupby[0].item() if len(no_groupby) > 0 else 0.0
 
         return have_groupby, no_groupby
 
@@ -120,7 +123,8 @@ class csv_reader:
 
         return ret
         # return {target_value: dis[dis[target_col] == target_value]["percentage"].item() for target_value in target_values}
-   
+
+
     
 if __name__ == "__main__":
     # csv_reader = csv_reader("data/2024 Final Data2.xlsx")
