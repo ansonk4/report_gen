@@ -6,16 +6,21 @@ def major_prompt(top_major, top_dislike_major):
         "Based on the following data about students' major preference rankings, \n"
         "please write a concise and insightful conclusion that highlights notable trends, \n"
         "gender differences, and the least preferred majors:\n\n"
-        f"Top 5 major choices among all students: {top_major['all']}\n"
+        f"Top 5 major choices among all students: {top_major['all'][:5]}\n"
     )
     if 'm' in top_major:
-        prompt += f"Top 5 major choices among male students: {top_major['m']}\n"
+        prompt += f"Top 5 major choices among male students: {top_major['m'][:5]}\n"
     if 'f' in top_major:
-        prompt += f"Top 5 major choices among female students: {top_major['f']}\n"
-    prompt += (
-        f"Top 2 least preferred majors among all students: {top_dislike_major['all']}\n\n"
-        "Focus on similarities and differences between genders, and discuss any unexpected or significant findings.\n"
-    )
+        prompt += f"Top 5 major choices among female students: {top_major['f'][:5]}\n"
+
+    prompt += f"Top 5 least preferred occupations among all students: {top_dislike_major['all'][:5]}\n\n"
+    if 'm' in top_dislike_major:
+        prompt += f"- Top 5  least preferred majors chosen by male students: {top_dislike_major['m'][:5]}\n"
+    if 'f' in top_dislike_major:
+        prompt += f"- Top 5  least preferred majors chosen by female students: {top_dislike_major['f'][:5]}\n"
+
+    prompt += "Focus on similarities and differences between genders, and discuss any unexpected or significant findings.\n"
+
     return prompt
 
 def occupations_prompt(top_occupation, top_dislike_occupation):
@@ -24,13 +29,18 @@ def occupations_prompt(top_occupation, top_dislike_occupation):
         f"- Top 5 occupations chosen by all students: {top_occupation['all']}\n"
     )
     if 'm' in top_occupation:
-        prompt += f"- Top 5 occupations chosen by male students: {top_occupation['m']}\n"
+        prompt += f"- Top 5 occupations chosen by male students: {top_occupation['m'][:5]}\n"
     if 'f' in top_occupation:
-        prompt += f"- Top 5 occupations chosen by female students: {top_occupation['f']}\n"
-    prompt += (
-        f"- 2 least preferred occupations among all students: {top_dislike_occupation['all']}\n\n"
-        "Focus on similarities and differences between genders, and discuss any unexpected or significant findings.\n"
-    )
+        prompt += f"- Top 5 occupations chosen by female students: {top_occupation['f'][:5]}\n"
+
+    prompt += f"Top 5 least preferred occupations among all students: {top_dislike_occupation['all'][:5]}\n\n"
+    if 'm' in top_dislike_occupation:
+        prompt += f"- Top 5  least preferred occupations chosen by male students: {top_dislike_occupation['m'][:5]}\n"
+    if 'f' in top_dislike_occupation:
+        prompt += f"- Top 5  least preferred occupations chosen by female students: {top_dislike_occupation['f'][:5]}\n"
+
+    prompt += "Focus on similarities and differences between genders, and discuss any unexpected or significant findings.\n"
+    
     return prompt
 
 def stem_conclusion_prompt(context):

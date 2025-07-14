@@ -35,7 +35,7 @@ class DocumentGenerator:
     def __init__(self, config: Config):
         self.config = config
         self.doc = DocxTemplate(config.template_path)
-        self.llm = llm(stop_all=True)
+        self.llm = llm(stop_all=False)
         if config.school_data_path is None:
             self.school_reader = csv_reader(config.general_data_path, config.school_id)
         else:
@@ -108,73 +108,57 @@ class DocumentGenerator:
 
     def _process_majors(self) -> None:
         """Process major preference data."""
-        # try:
-        logger.info("Processing major preferences...")
+        try:
+            logger.info("Processing major preferences...")
 
-        # Main major analysis
-        target_cols = ['target_major1', 'target_major2', 'target_major3']
-        top_majors = self._get_topk_groupby("major", target_cols, "gender", 5)
+            target_cols = ['target_major1', 'target_major2', 'target_major3']
+            top_majors = self._get_topk_groupby("major", target_cols, "gender", 10)
 
-        # Populate context with major data
-        self._populate_context_with_topk(top_majors, "major", "male_major", "female_major")
-        
-        # Disliked majors
-        dislike_cols = ['dislike_major1', 'dislike_major2', 'dislike_major3']
-        top_dislike_majors = self._get_topk_groupby("dislike_major", dislike_cols, "gender", 5)
-        self._populate_context_with_topk(top_dislike_majors, "unpopular_major", "male_unpopular_major", "female_unpopular_major")
-        
-        # Generate conclusion
-        self.context["major_conclusion"] = self.llm.generate(
-            prompt_template.major_prompt(top_majors, top_dislike_majors)
-        )
-    
-        # Extended major data for appendix
-        top_majors = self._get_topk_groupby("major", target_cols, "gender", 10)
-        self._populate_context_with_topk(top_majors, "top_major", "top_male_major", "top_female_major")
+            dislike_cols = ['dislike_major1', 'dislike_major2', 'dislike_major3']
+            top_dislike_majors = self._get_topk_groupby("dislike_major", dislike_cols, "gender", 10)
+            
+            self._populate_context_with_topk(top_majors, "major", "male_major", "female_major", 5)
+            self._populate_context_with_topk(top_dislike_majors, "unpopular_major", "male_unpopular_major", "female_unpopular_major", 5)
+            self._populate_context_with_topk(top_majors, "top_major", "top_male_major", "top_female_major")
+            self._populate_context_with_topk(top_dislike_majors, "top_unpopular_major", "top_unpopular_male_major", "top_unpopular_female_major")
 
-        # Plot major factor graph
-        major_factors = [
-            "personal_interests", "institute", "tuition",
-            "scholarship", "career_prospect", "peers_and_teacher",
-            "family", "salary", "DSE_result",
-            "high_school_electives"
-        ]
-        output_path = "img/major_factors.png"
-        self._plot_factors_graph(major_factors, "Major Selection Factors", "_A", output_path)
-        self.context["major_factors_graph"] = InlineImage(self.doc, output_path, width=Mm(150))
+            # Generate conclusion
+            self.context["major_conclusion"] = self.llm.generate(
+                prompt_template.major_prompt(top_majors, top_dislike_majors)
+            )
+            # Plot major factor graph
+            major_factors = [
+                "personal_interests", "institute", "tuition",
+                "scholarship", "career_prospect", "peers_and_teacher",
+                "family", "salary", "DSE_result",
+                "high_school_electives"
+            ]
+            output_path = "img/major_factors.png"
+            self._plot_factors_graph(major_factors, "Major Selection Factors", "_A", output_path)
+            self.context["major_factors_graph"] = InlineImage(self.doc, output_path, width=Mm(150))
 
-        # except Exception as e:
-        #     logger.error(f"Error processing major preferences: {e}")
+        except Exception as e:
+            logger.error(f"Error processing major preferences: {e}")
     
     def _process_occupations(self) -> None:
         """Process occupation preference data."""
         try:
             logger.info("Processing occupation preferences...")
             
-            # Main occupation analysis
             target_cols = ['target_occupation1', 'target_occupation2', 'target_occupation3']
-            top_occupations = self._get_topk_groupby("occupation", target_cols, "gender", 5)
-            
-            # Populate context with occupation data
-            self._populate_context_with_topk(top_occupations, "occupation", "male_occupation", "female_occupation")
-            
-            # Disliked occupations
+            top_occupations = self._get_topk_groupby("occupation", target_cols, "gender", 10)
             dislike_cols = ['dislike_occupation1', 'dislike_occupation2', 'dislike_occupation3']
-            top_dislike_occupations = self._get_topk_groupby("dislike_occupation", dislike_cols, "gender", 2)
+            top_dislike_occupations = self._get_topk_groupby("dislike_occupation", dislike_cols, "gender", 10)            
             
-            for i, item in enumerate(top_dislike_occupations["all"]):
-                self.context[f'unpopular_occupations_{i}'] = item
-            
+            self._populate_context_with_topk(top_occupations, "occupation", "male_occupation", "female_occupation", 5)
+            self._populate_context_with_topk(top_dislike_occupations, "unpopular_occupation", "male_unpopular_occupation", "female_unpopular_occupation", 5)
+            self._populate_context_with_topk(top_occupations, "top_occupation", "top_male_occupation", "top_female_occupation")
+            self._populate_context_with_topk(top_dislike_occupations, "top_unpopular_occupation", "top_unpopular_male_occupation", "top_unpopular_female_occupation")
+
             # Generate conclusion
             self.context["occupations_conclusion"] = self.llm.generate(
                 prompt_template.occupations_prompt(top_occupations, top_dislike_occupations)
             )
-            
-            # Extended occupation data for appendix
-            extended_occupations = self._get_topk_groupby("occupation", target_cols, "gender", 7)
-            for i, item in enumerate(extended_occupations["all"]):
-                self.context[f'top_occupation_{i}'] = item
-
              # Plot major factor graph
             occupation_factors = [
                 "personal_ability", "personal_interest", "sense_of_achievement", "family",
@@ -294,17 +278,23 @@ class DocumentGenerator:
         )
     
     def _populate_context_with_topk(self, data: Dict[str, List[str]], 
-                                   all_key: str, male_key: str, female_key: str) -> None:
+                                   all_key: str, male_key: str, female_key: str, k: int=99999) -> None:
         """Populate context with top-k data for all, male, and female categories."""
         for i, item in enumerate(data["all"]):
+            if i >= k:
+                break
             self.context[f'{all_key}_{i}'] = item
 
         if "m" in data:
             for i, item in enumerate(data["m"]):
+                if i >= k:
+                    break
                 self.context[f'{male_key}_{i}'] = item
 
         if "f" in data:
             for i, item in enumerate(data["f"]):
+                if i >= k:
+                    break
                 self.context[f'{female_key}_{i}'] = item
 
     def _analyze_stem_preferences(self, category: str, is_major: bool, suffix: str, 

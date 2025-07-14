@@ -15,6 +15,6 @@ id_2_name = {
 
 
 for key, value in id_2_name.items():
-    config = Config(school_id=key, school_name=value, output_path=f"output/24report_{key}_{value}.docx")
+    config = Config(school_id=key, school_name=value, general_data_path="data/school_all.xlsx", output_path=f"output/25report_{key}_{value}.docx")
     generator = DocumentGenerator(config)
     generator.generate_report()

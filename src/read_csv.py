@@ -16,8 +16,8 @@ class csv_reader:
         self.raw_df = df.copy()
 
         df['gender'] = df['gender'].replace({1.0: 'm', 2.0: 'f'})
-        # df['gba_understanding'] = df['gba_understanding'].replace({1.0: False, 2.0: False, 3.0: True, 4.0: True}).astype(bool)
-        df['gba_understanding'] = df['gba_understanding'].replace({1.0: False, 2.0: True}).astype(bool)
+        df['gba_understanding'] = df['gba_understanding'].replace({1.0: False, 2.0: False, 3.0: True, 4.0: True}).astype(bool)
+        # df['gba_understanding'] = df['gba_understanding'].replace({1.0: False, 2.0: True}).astype(bool)
         df['stem_participation'] = df['stem_participation'].replace({1.0: True, 2.0: False}).astype(bool)
         df['stress_scource'] = df['stress_scource'].replace({1.0: "personal", 2.0: "external"}).astype(str)
         df['stress_lv'] = df['stress_lv'].replace({1.0: "none", 2.0:"very_low", 3.0:"low", 4.0: "moderate", 5.0: "high", 6.0: "very_high"}).astype(str)
