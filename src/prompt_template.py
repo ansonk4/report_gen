@@ -100,7 +100,7 @@ def stress_sources_prompt(context):
             You are an education researcher analyzing the stress sources among high school students in Hong Kong. The following table presents the percentage distribution of various stress sources for two groups of students: those from a specific target school (Individual School) and those from average schools (General). Please analyze the differences and similarities between the two groups and provide a concise conclusion that highlights any notable trends, unique findings, or possible explanations. Use the data below:
 
             ```
-            Sources                        | Individual School                | General School
+            Sources                        | Target School                | Average
             -------------------------------------------------------------------------------
             Parent’s Expectation           | {context['family_expectations_A']}%     | {context['family_expectations_B']}%
             Peer Comparison                | {context['comparison_A']}%              | {context['comparison_B']}%
