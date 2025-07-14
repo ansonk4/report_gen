@@ -2,16 +2,15 @@ from doc import Config, DocumentGenerator
 
 id_2_name = {
     10: "SKH Bishop Mok Sau Tseng Secondary School",
-    11: "HHCKLA Buddhist Leung Chik Wai College",
-    12: "Kwun Tong Kung Lok Government Secondary School",
-    13: "Kowloon Tong School (Secondary School)",
-    14: "TWGHs Chen Zao Men College",
-    15: "Caritas Ma On Shan Secondary School",
-    16: "Salem-Immanuel Lutheran College",
-    # 17: "Kiangsu-Chekiang College",
-    18: "Shun Tak Fraternal Association Tam Pak Yu College",
-    19: "The Church of Christ in China Kei To Secondary School",
-    20: "Tack Ching Girls' Secondary School"
+    # 11: "HHCKLA Buddhist Leung Chik Wai College",
+    # 12: "Kwun Tong Kung Lok Government Secondary School",
+    # 13: "Kowloon Tong School (Secondary School)",
+    # 14: "TWGHs Chen Zao Men College",
+    # 15: "Caritas Ma On Shan Secondary School",
+    # 16: "Salem-Immanuel Lutheran College",
+    # 18: "Shun Tak Fraternal Association Tam Pak Yu College",
+    # 19: "The Church of Christ in China Kei To Secondary School",
+    # 20: "Tack Ching Girls' Secondary School"
 }
 
 

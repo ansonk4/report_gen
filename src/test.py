@@ -1,6 +1,6 @@
 import pandas as pd
 from read_csv import csv_reader
-
+import prompt_template
 path = "data/2024 Final Data2.xlsx"
 # df = pd.read_excel(path, header=2)
 
@@ -14,7 +14,8 @@ path = "data/2024 Final Data2.xlsx"
 #     ])
 #     .value_counts()
 # )
-
+top = {"all":0, "m":0, "f":0}
+print(prompt_template.major_prompt(top, top))
 
 # dis["percentage"] = dis["percentage"] / dis["percentage"].sum()
 # dis["percentage"] = dis["percentage"].mul(100).round(1)

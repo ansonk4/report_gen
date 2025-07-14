@@ -349,7 +349,7 @@ class DocumentGenerator:
     def _analyze_stress_sources(self) -> None:
         """Analyze detailed stress sources."""
         stress_sources = [
-            "family_expectations", "comparison", "dense_ttb", "test_scores",
+            "family_expectations", "comparison", "tight_schedule", "test_scores",
             "relationships", "prospect", "expectation", "long_term_solitude",
             "covid_19", "unstable_class", "transfer_exam"
         ]

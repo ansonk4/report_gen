@@ -2,30 +2,36 @@
 DEFAULT_PROMPT = "Please enter your query:"
 
 def major_prompt(top_major, top_dislike_major):
-    return f"""
-            Based on the following data about students' major preference rankings, 
-            please write a concise and insightful conclusion that highlights notable trends, 
-            gender differences, and the least preferred majors:
-
-            Top 5 major choices among all students: {top_major['all']}
-            Top 5 major choices among male students: {top_major['m']}
-            Top 5 major choices among female students: {top_major['f']}
-            Top 2 least preferred majors among all students: {top_dislike_major['all']}
-            
-            Focus on similarities and differences between genders, and discuss any unexpected or significant findings.
-            """
+    prompt = (
+        "Based on the following data about students' major preference rankings, \n"
+        "please write a concise and insightful conclusion that highlights notable trends, \n"
+        "gender differences, and the least preferred majors:\n\n"
+        f"Top 5 major choices among all students: {top_major['all']}\n"
+    )
+    if 'm' in top_major:
+        prompt += f"Top 5 major choices among male students: {top_major['m']}\n"
+    if 'f' in top_major:
+        prompt += f"Top 5 major choices among female students: {top_major['f']}\n"
+    prompt += (
+        f"Top 2 least preferred majors among all students: {top_dislike_major['all']}\n\n"
+        "Focus on similarities and differences between genders, and discuss any unexpected or significant findings.\n"
+    )
+    return prompt
 
 def occupations_prompt(top_occupation, top_dislike_occupation):
-    return f"""
-            Based on the following data about students' occupational preferences, write a concise and insightful conclusion that highlights key patterns, gender differences, and notable trends:
-
-            - Top 5 occupations chosen by all students: {top_occupation['all']}
-            - Top 5 occupations chosen by male students: {top_occupation['m']}
-            - Top 5 occupations chosen by female students: {top_occupation['f']}
-            - 2 least preferred occupations among all students: {top_dislike_occupation['all']}
-
-            Focus on similarities and differences between genders, and discuss any unexpected or significant findings.
-            """
+    prompt = (
+        "Based on the following data about students' occupational preferences, write a concise and insightful conclusion that highlights key patterns, gender differences, and notable trends:\n\n"
+        f"- Top 5 occupations chosen by all students: {top_occupation['all']}\n"
+    )
+    if 'm' in top_occupation:
+        prompt += f"- Top 5 occupations chosen by male students: {top_occupation['m']}\n"
+    if 'f' in top_occupation:
+        prompt += f"- Top 5 occupations chosen by female students: {top_occupation['f']}\n"
+    prompt += (
+        f"- 2 least preferred occupations among all students: {top_dislike_occupation['all']}\n\n"
+        "Focus on similarities and differences between genders, and discuss any unexpected or significant findings.\n"
+    )
+    return prompt
 
 def stem_conclusion_prompt(context):
     return f"""
@@ -88,7 +94,7 @@ def stress_sources_prompt(context):
             -------------------------------------------------------------------------------
             Parent’s Expectation           | {context['family_expectations_A']}%     | {context['family_expectations_B']}%
             Peer Comparison                | {context['comparison_A']}%              | {context['comparison_B']}%
-            Tight Study Schedule           | {context['dense_ttb_A']}%               | {context['dense_ttb_B']}%
+            Tight Study Schedule           | {context['tight_schedule_A']}%          | {context['tight_schedule_B']}%
             Examination Results            | {context['test_scores_A']}%             | {context['test_scores_B']}%
             Relationships                  | {context['relationships_A']}%           | {context['relationships_B']}%
             Own Prospect                   | {context['prospect_A']}%                | {context['prospect_B']}%
