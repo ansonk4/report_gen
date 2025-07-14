@@ -120,20 +120,17 @@ class DocumentGenerator:
         
         # Disliked majors
         dislike_cols = ['dislike_major1', 'dislike_major2', 'dislike_major3']
-        top_dislike_majors = self._get_topk_groupby("dislike_major", dislike_cols, "gender", 2)
-        
-        for i, item in enumerate(top_dislike_majors["all"]):
-            self.context[f'unpopular_majors_{i}'] = item
+        top_dislike_majors = self._get_topk_groupby("dislike_major", dislike_cols, "gender", 5)
+        self._populate_context_with_topk(top_dislike_majors, "unpopular_major", "male_unpopular_major", "female_unpopular_major")
         
         # Generate conclusion
         self.context["major_conclusion"] = self.llm.generate(
             prompt_template.major_prompt(top_majors, top_dislike_majors)
         )
-            
+    
         # Extended major data for appendix
-        extended_majors = self._get_topk_groupby("major", target_cols, "gender", 7)
-        for i, item in enumerate(extended_majors["all"]):
-            self.context[f'top_major_{i}'] = item
+        top_majors = self._get_topk_groupby("major", target_cols, "gender", 10)
+        self._populate_context_with_topk(top_majors, "top_major", "top_male_major", "top_female_major")
 
         # Plot major factor graph
         major_factors = [
