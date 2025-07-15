@@ -97,10 +97,10 @@ def gba_conclusion_prompt(context):
 
 def stress_sources_prompt(context):
     return f"""
-            You are an education researcher analyzing the stress sources among high school students in Hong Kong. The following table presents the percentage distribution of various stress sources for two groups of students: those from a specific target school (Individual School) and those from average schools (General). Please analyze the differences and similarities between the two groups and provide a concise conclusion that highlights any notable trends, unique findings, or possible explanations. Use the data below:
+            You are an education researcher analyzing the stress sources among high school students in Hong Kong. The following table presents the percentage distribution of various stress sources for two groups of students: those from an individual School and those from average schools. Please analyze the differences and similarities between the two groups and provide a concise conclusion that highlights any notable trends, unique findings, or possible explanations. Use the data below:
 
             ```
-            Sources                        | Target School                | Average
+            Sources                        | Individual School                 | Average
             -------------------------------------------------------------------------------
             Parent’s Expectation           | {context['family_expectations_A']}%     | {context['family_expectations_B']}%
             Peer Comparison                | {context['comparison_A']}%              | {context['comparison_B']}%
@@ -117,3 +117,30 @@ def stress_sources_prompt(context):
 
             Only provide the conclusion. Avoid repeating the table or listing all percentages again. Focus on patterns and implications related to student stress between the two school types.
             """
+
+def stress_level_prompt(context):
+    return f"""
+Based on the following survey data on stress levels and stress tolerance among high school students, write a short and insightful conclusion. The conclusion should highlight any key findings, such as notable differences between the individual school and general results, trends in stress levels, or how well students are able to endure stress.
+
+### Stress Levels
+
+| Level         | Individual School          | Average                   |
+|---------------|----------------------------|---------------------------|
+| None          | {context["none_A"]}        | {context["none_B"]}       |
+| Very Low      | {context["very_low_A"]}    | {context["very_low_B"]}   |
+| Low           | {context["low_A"]}         | {context["low_B"]}        |
+| Moderate      | {context["moderate_A"]}    | {context["moderate_B"]}   |
+| High          | {context["high_A"]}        | {context["high_B"]}       |
+| Very High     | {context["very_high_A"]}   | {context["very_high_B"]}  |
+
+### Endure Stress
+
+| Stress Tolerance  | Individual School             | Average                       |
+|------------------|-------------------------------|-------------------------------|
+| Totally cannot   | {context["totally_cannot_A"]} | {context["totally_cannot_B"]} |
+| Mostly cannot    | {context["mostly_cannot_A"]}  | {context["mostly_cannot_B"]}  |
+| Mostly can       | {context["mostly_can_A"]}     | {context["mostly_can_B"]}     |
+| Totally can      | {context["totally_can_A"]}    | {context["totally_can_B"]}    |
+"""
+
+

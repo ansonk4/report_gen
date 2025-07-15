@@ -19,9 +19,7 @@ class Config:
     """Configuration settings for the document generator."""
     template_path: str = "doc/template.docx"
     output_path: str = "doc/filled_report.docx"
-    # school_data_path: str = "data/School 10.xlsx"
     school_data_path: str = None
-    # general_data_path: str = "data/school_all.xlsx"
     general_data_path: str = "data/2024 Final Data2.xlsx"
     image_dir: str = "img"
     year: int = 2024
@@ -109,8 +107,6 @@ class DocumentGenerator:
     def _process_majors(self) -> None:
         """Process major preference data."""
         try:
-            logger.info("Processing major preferences...")
-
             target_cols = ['target_major1', 'target_major2', 'target_major3']
             top_majors = self._get_topk_groupby("major", target_cols, "gender", 10)
 
@@ -143,8 +139,6 @@ class DocumentGenerator:
     def _process_occupations(self) -> None:
         """Process occupation preference data."""
         try:
-            logger.info("Processing occupation preferences...")
-            
             target_cols = ['target_occupation1', 'target_occupation2', 'target_occupation3']
             top_occupations = self._get_topk_groupby("occupation", target_cols, "gender", 10)
             dislike_cols = ['dislike_occupation1', 'dislike_occupation2', 'dislike_occupation3']
@@ -176,8 +170,6 @@ class DocumentGenerator:
     def _process_stem_analysis(self) -> None:
         """Process STEM-related analysis."""
         try:
-            logger.info("Processing STEM analysis...")
-            
             # STEM skills analysis
             skill_categories = ["leadership", "teamwork", "creativity", "sci_knowledge", "problem_solving"]
             skill_mapping = {
@@ -214,8 +206,6 @@ class DocumentGenerator:
     def _process_gba_analysis(self) -> None:
         """Process GBA (Global Business Administration) analysis."""
         try:
-            logger.info("Processing GBA analysis...")
-        
             # GBA major analysis
             gba_bus_major = self.school_reader.check_class_match("Business", "gba_understanding", major=True)
             gba_sci_major = self.school_reader.check_class_match("Science", "gba_understanding", major=True)
@@ -251,7 +241,6 @@ class DocumentGenerator:
     
     def _process_stress_analysis(self) -> None:
         """Process stress-related analysis."""
-        logger.info("Processing stress analysis...")
         
         # Stress source analysis
         stress_factor = self.school_reader.get_percent("stress_scource", ["personal", "external"])
@@ -275,6 +264,9 @@ class DocumentGenerator:
         # Generate stress conclusion
         self.context['stress_sources_conclusion'] = self.llm.generate(
             prompt_template.stress_sources_prompt(self.context)
+        )
+        self.context['stress_level_conclusion'] = self.llm.generate(
+            prompt_template.stress_level_prompt(self.context)
         )
     
     def _populate_context_with_topk(self, data: Dict[str, List[str]], 
@@ -335,98 +327,110 @@ class DocumentGenerator:
     
     def _analyze_stress_sources(self) -> None:
         """Analyze detailed stress sources."""
-        stress_sources = [
-            "family_expectations", "comparison", "tight_schedule", "test_scores",
-            "relationships", "prospect", "expectation", "long_term_solitude",
-            "covid_19", "unstable_class", "transfer_exam"
-        ]
-        
-        stress_sources_values = {}
-        avg_stress_sources_values = {}
-        
-        for source in stress_sources:
-            school_value = self.school_reader.get_percent(source, [1.0], drop_zero=False)[1.0]
-            general_value = self.general_reader.get_percent(source, [1.0], drop_zero=False)[1.0]
+        try:
+            stress_sources = [
+                "family_expectations", "comparison", "tight_schedule", "test_scores",
+                "relationships", "prospect", "expectation", "long_term_solitude",
+                "covid_19", "unstable_class", "transfer_exam"
+            ]
             
-            self.context[f"{source}_A"] = school_value
-            self.context[f"{source}_B"] = general_value
-            stress_sources_values[source] = school_value
-            avg_stress_sources_values[source] = general_value
-        
-        # Generate stress sources chart
-        plotter.double_bar_chart(
-            stress_sources, stress_sources_values, avg_stress_sources_values,
-            f"Stress Sources: {self.config.school_name} vs Average", "Stress Sources",
-            "Target School", 'Average', "img/stress_sources.png"
-        )
-        
-        self.context["stress_sources_graph"] = InlineImage(
-            self.doc, "img/stress_sources.png", width=Mm(150)
-        )
+            stress_sources_values = {}
+            avg_stress_sources_values = {}
+            
+            for source in stress_sources:
+                school_value = self.school_reader.get_percent(source, [1.0], drop_zero=False)[1.0]
+                general_value = self.general_reader.get_percent(source, [1.0], drop_zero=False)[1.0]
+                
+                self.context[f"{source}_A"] = school_value
+                self.context[f"{source}_B"] = general_value
+                stress_sources_values[source] = school_value
+                avg_stress_sources_values[source] = general_value
+            
+            # Generate stress sources chart
+            plotter.double_bar_chart(
+                stress_sources, stress_sources_values, avg_stress_sources_values,
+                f"Stress Sources: {self.config.school_name} vs Average", "Stress Sources",
+                "Individual School", 'Average', "img/stress_sources.png"
+            )
+            
+            self.context["stress_sources_graph"] = InlineImage(
+                self.doc, "img/stress_sources.png", width=Mm(150)
+            )
+        except Exception as e:
+            logger.error(f"Error processing stress sources: {e}")
     
     def _analyze_stress_levels(self) -> None:
         """Analyze stress level distribution."""
-        stress_levels = ["none", "very_low", "low", "moderate", "high", "very_high"]
+        try:
+            stress_levels = ["none", "very_low", "low", "moderate", "high", "very_high"]
+            
+            stress_lv_distribution = self.school_reader.get_percent("stress_lv", stress_levels, drop_zero=False)
+            general_stress_lv_distribution = self.general_reader.get_percent("stress_lv", stress_levels, drop_zero=False)
+            
+            for level in stress_levels:
+                self.context[f"{level}_A"] = stress_lv_distribution[level]
+                self.context[f"{level}_B"] = general_stress_lv_distribution[level]
+            
+            # Generate stress level chart
+            plotter.double_bar_chart(
+                stress_levels, stress_lv_distribution, general_stress_lv_distribution,
+                f"Stress Level: {self.config.school_name} vs Average", "Stress Level",
+                "Individual School", 'Average', "img/stress_level_distribution.png"
+            )
+            
+            self.context["stress_lv_graph"] = InlineImage(
+                self.doc, "img/stress_level_distribution.png", width=Mm(150)
+            )
+        except Exception as e:
+            logger.error(f"Error processing stress level: {e}")
         
-        stress_lv_distribution = self.school_reader.get_percent("stress_lv", stress_levels, drop_zero=False)
-        general_stress_lv_distribution = self.general_reader.get_percent("stress_lv", stress_levels, drop_zero=False)
-        
-        for level in stress_levels:
-            self.context[f"{level}_A"] = stress_lv_distribution[level]
-            self.context[f"{level}_B"] = general_stress_lv_distribution[level]
-        
-        # Generate stress level chart
-        plotter.double_bar_chart(
-            stress_levels, stress_lv_distribution, general_stress_lv_distribution,
-            f"Stress Level: {self.config.school_name} vs Average", "Stress Level",
-            "Target School", 'Average', "img/stress_level_distribution.png"
-        )
-        
-        self.context["stress_lv_graph"] = InlineImage(
-            self.doc, "img/stress_level_distribution.png", width=Mm(150)
-        )
-    
     def _analyze_endurance_levels(self) -> None:
         """Analyze stress endurance levels."""
-        endure_levels = ["totally_cannot", "mostly_cannot", "mostly_can", "totally_can"]
-        
-        endure_lv_distribution = self.school_reader.get_percent("endure_lv", endure_levels, drop_zero=False)
-        general_endure_lv_distribution = self.general_reader.get_percent("endure_lv", endure_levels, drop_zero=False)
+        try:
+            endure_levels = ["totally_cannot", "mostly_cannot", "mostly_can", "totally_can"]
+            
+            endure_lv_distribution = self.school_reader.get_percent("endure_lv", endure_levels, drop_zero=False)
+            general_endure_lv_distribution = self.general_reader.get_percent("endure_lv", endure_levels, drop_zero=False)
 
-        for level in endure_levels:
-            self.context[f"{level}_A"] = endure_lv_distribution[level]
-            self.context[f"{level}_B"] = general_endure_lv_distribution[level]
-        
-        # Generate endurance level chart
-        plotter.double_bar_chart(
-            endure_levels, endure_lv_distribution, general_endure_lv_distribution,
-            f"Endure Stress Level: {self.config.school_name} vs Average", "Level",
-            "Target School", 'Average', "img/endure_level_distribution.png"
-        )
-        
-        self.context["endure_graph"] = InlineImage(
-            self.doc, "img/endure_level_distribution.png", width=Mm(150)
-        )
-    
+            for level in endure_levels:
+                self.context[f"{level}_A"] = endure_lv_distribution[level]
+                self.context[f"{level}_B"] = general_endure_lv_distribution[level]
+            
+            # Generate endurance level chart
+            plotter.double_bar_chart(
+                endure_levels, endure_lv_distribution, general_endure_lv_distribution,
+                f"Stress Tolerance: {self.config.school_name} vs Average", "Level",
+                "Individual School", 'Average', "img/endure_level_distribution.png"
+            )
+            
+            self.context["endure_graph"] = InlineImage(
+                self.doc, "img/endure_level_distribution.png", width=Mm(150)
+            )
+        except Exception as e:
+            logger.error(f"Error processing stress endurance: {e}")
+
     def _analyze_stress_methods(self) -> None:
         """Analyze stress management methods."""
-        stress_methods = [
-            "exercise", "family_communication", "friends_communication", "social_workers",
-            "restructuring_ttb", "video_games", "sleep", "music", "no_idea"
-        ]
-        school_values = {}
-        for method in stress_methods:
-            school_value = self.school_reader.get_percent(method, [1.0], drop_zero=False)[1.0]
-            general_value = self.general_reader.get_percent(method, [1.0], drop_zero=False)[1.0]
-            school_values[method] = school_value
-            self.context[f"{method}_A"] = school_value
-            self.context[f"{method}_B"] = general_value
+        try:
+            stress_methods = [
+                "exercise", "family_communication", "friends_communication", "social_workers",
+                "restructuring_ttb", "video_games", "sleep", "music", "no_idea"
+            ]
+            school_values = {}
+            for method in stress_methods:
+                school_value = self.school_reader.get_percent(method, [1.0], drop_zero=False)[1.0]
+                general_value = self.general_reader.get_percent(method, [1.0], drop_zero=False)[1.0]
+                school_values[method] = school_value
+                self.context[f"{method}_A"] = school_value
+                self.context[f"{method}_B"] = general_value
 
-        plotter.pie_chart(stress_methods, school_values, f"Stress Relieve Method: {self.school}", "img/stress_method.png")
-        self.context["stress_graph"] = InlineImage(
-            self.doc, "img/stress_method.png", width=Mm(150)
-        )
-
+            plotter.pie_chart(stress_methods, school_values, f"Stress Relieve Method: {self.school}", "img/stress_method.png")
+            self.context["stress_graph"] = InlineImage(
+                self.doc, "img/stress_method.png", width=Mm(150)
+            )
+        except Exception as e:
+            logger.error(f"Error processing stress method: {e}")
+            
     def _format_percentages(self) -> None:
         """Format all float values as percentages."""
         for key, value in self.context.items():
@@ -435,7 +439,6 @@ class DocumentGenerator:
     
     def _render_document(self) -> None:
         """Render and save the final document."""
-        logger.info("Rendering document...")
         self.doc.render(self.context)
         self.doc.save(self.config.output_path)
 
