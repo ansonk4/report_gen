@@ -11,7 +11,7 @@ import logging
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-for name in ["choreographer", "kaleido", "httpx"]:
+for name in ["choreographer", "kaleido", "httpx", "google_genai"]:
     logging.getLogger(name).setLevel(logging.CRITICAL)
 
 @dataclass
@@ -33,7 +33,7 @@ class DocumentGenerator:
     def __init__(self, config: Config):
         self.config = config
         self.doc = DocxTemplate(config.template_path)
-        self.llm = llm(stop_all=False)
+        self.llm = llm(google=True, stop_all=False)
         if config.school_data_path is None:
             self.school_reader = csv_reader(config.general_data_path, config.school_id)
         else:

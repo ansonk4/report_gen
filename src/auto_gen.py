@@ -69,8 +69,10 @@ path = "data/school_all.xlsx"
 df = pd.read_excel(path, header=2)
 interviewed_school_ids = set(df['school_id'].unique())
 
-for key, value in tqdm(id_2_school.items()):
+for key, value in id_2_school.items():
     if key not in interviewed_school_ids:
+        continue
+    if key != 14:
         continue
     config = Config(
         school_id=key, 
