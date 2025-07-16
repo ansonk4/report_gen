@@ -69,11 +69,13 @@ path = "data/school_all.xlsx"
 df = pd.read_excel(path, header=2)
 interviewed_school_ids = set(df['school_id'].unique())
 
+start = 34
 for key, value in id_2_school.items():
     if key not in interviewed_school_ids:
         continue
-    if key != 14:
+    if key < start:
         continue
+
     config = Config(
         school_id=key, 
         school_name=value, 

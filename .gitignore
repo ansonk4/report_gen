@@ -29,4 +29,5 @@ htmlcov/
 *.sqlite3
 *.db
 output/
+img/
 ~*
