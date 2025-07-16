@@ -20,12 +20,14 @@ class Config:
     template_path: str = "doc/template.docx"
     output_path: str = "doc/filled_report.docx"
     school_data_path: str = None
-    general_data_path: str = "data/2024 Final Data2.xlsx"
+    general_data_path: str = "data/school_all.xlsx"
     image_dir: str = "img"
     year: int = 2024
     school_name: str = "High School"
     school_id: int = 12
-
+    use_llm: bool = True
+    use_gemini: bool = True
+    model_name: str = None
 
 class DocumentGenerator:
     """Main class for generating school survey reports."""
@@ -33,7 +35,7 @@ class DocumentGenerator:
     def __init__(self, config: Config):
         self.config = config
         self.doc = DocxTemplate(config.template_path)
-        self.llm = llm(google=True, stop_all=True)
+        self.llm = llm(gemini=config.use_gemini, model_name=config.model_name, stop_all=not config.use_llm)
         if config.school_data_path is None:
             self.school_reader = csv_reader(config.general_data_path, config.school_id)
         else:

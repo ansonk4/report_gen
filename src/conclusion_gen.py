@@ -5,10 +5,10 @@ from dotenv import load_dotenv
 from google import genai
 
 class llm:
-    def __init__(self, google=False, stop_all=False, max_retries=2, backoff=15):
+    def __init__(self, gemini=False, model_name=None, stop_all=False, max_retries=2, backoff=15):
         load_dotenv()
 
-        if google:
+        if gemini:
             self.client = genai.Client()
         else:
             self.client = OpenAI(
@@ -16,7 +16,8 @@ class llm:
                 api_key=os.getenv("OPENROUTER_KEY"),
             )
 
-        self.google = google
+        self.gemini = gemini
+        self.model_name = model_name
         self.stop_all = stop_all
         self.max_retries = max_retries      # total attempts (first + retries)
         self.backoff = backoff              # seconds to wait before each retry
@@ -29,15 +30,15 @@ class llm:
         attempt = 0
         while attempt < self.max_retries:
             try:
-                if self.google:
+                if self.gemini:
                     resp = self.client.models.generate_content(
-                        model="gemini-2.5-flash",
+                        model="gemini-2.5-flash" if self.model_name is None else self.model_name,
                         contents=prompt + "ONLY finish the above task WITHOUT any explanation, additional text or markdown."
                     )
                     return resp.text
                 else:
                     resp = self.client.chat.completions.create(
-                        model="mistralai/mistral-small-3.2-24b-instruct:free",
+                        model="mistralai/mistral-small-3.2-24b-instruct:free" if self.model_name is None else self.model_name,
                         messages=[{
                             "role": "user",
                             "content": [
@@ -60,5 +61,5 @@ class llm:
 
 
 if __name__ == "__main__":
-    llm = llm(google=True)
+    llm = llm(gemini=True)
     print(llm.generate("Explain how AI works in a few words"))

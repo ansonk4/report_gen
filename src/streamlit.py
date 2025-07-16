@@ -22,8 +22,32 @@ def main():
     st.sidebar.subheader("Basic Information")
     school_name = st.sidebar.text_input("School Name", value="High School")
     school_id = st.sidebar.number_input("School ID", value=12, min_value=1, step=1)
-    year = st.sidebar.number_input("Survey Year", value=2025, min_value=2020, max_value=2030, step=1)
+    year = st.sidebar.number_input("Survey Year", value=2025, min_value=2020, step=1)
     
+    with st.sidebar.expander("LLM Settings", expanded=False):
+        # Use radio buttons to allow only one choice
+        llm_choice = st.sidebar.radio(
+            "Choose LLM Provider",
+            ("Gemini (Require VPN)", "OpenRouter", "Disabled")
+        )
+
+        # Show API key input depending on choice
+        GEMINI_API_KEY = None
+        OPENROUTER_KEY = None
+        model_name = None
+
+        if llm_choice == "Gemini (Require VPN)":
+            GEMINI_API_KEY = st.sidebar.text_input("GEMINI_API_KEY")
+            model_name = st.sidebar.text_input("Model", value="gemini-2.5-flash")
+            if GEMINI_API_KEY:
+                os.environ["GEMINI_API_KEY"] = GEMINI_API_KEY
+        elif llm_choice == "OpenRouter":
+            OPENROUTER_KEY = st.sidebar.text_input("OPENROUTER_API_KEY")
+            model_name = st.sidebar.text_input("Model", value="mistralai/mistral-small-3.2-24b-instruct:free")
+            if OPENROUTER_KEY:
+                os.environ["OPENROUTER_KEY"] = OPENROUTER_KEY
+
+
     # File paths
     with st.sidebar.expander("File and Output Paths", expanded=False):
         template_path = st.text_input("Template Path", value="doc/template.docx")
@@ -49,19 +73,19 @@ def main():
     
     
     # Configuration preview
-    st.header("⚙️ Configuration Preview")
-    config_data = {
-        "School Name": school_name,
-        "School ID": school_id,
-        "Survey Year": year,
-    }
+    # st.header("⚙️ Configuration Preview")
+    # config_data = {
+    #     "School Name": school_name,
+    #     "School ID": school_id,
+    #     "Survey Year": year,
+    # }
     
-    config_df = pd.DataFrame(list(config_data.items()), columns=['Setting', 'Value'])
-    st.dataframe(config_df, use_container_width=True)
+    # config_df = pd.DataFrame(list(config_data.items()), columns=['Setting', 'Value'])
+    # st.dataframe(config_df, use_container_width=True)
     
     # File validation
-    st.header("📋 File Validation")
-    validation_status = {}
+    # st.header("📋 File Validation")
+    # validation_status = {}
     
     # Check if files exist or are uploaded
     # if template_file or os.path.exists(template_path):
@@ -134,6 +158,9 @@ def main():
                     
                     # Create configuration
                     config = Config(
+                        use_gemini= (llm_choice == "Gemini (Require VPN)"),
+                        use_llm = (llm_choice != "Disabled"),
+                        model_name = model_name,
                         template_path=temp_template_path,
                         output_path=output_path,
                         general_data_path=temp_data_path,

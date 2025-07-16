@@ -69,7 +69,7 @@ path = "data/school_all.xlsx"
 df = pd.read_excel(path, header=2)
 interviewed_school_ids = set(df['school_id'].unique())
 
-start = 34
+start = 62
 for key, value in id_2_school.items():
     if key not in interviewed_school_ids:
         continue
@@ -80,7 +80,9 @@ for key, value in id_2_school.items():
         school_id=key, 
         school_name=value, 
         general_data_path=path, 
-        output_path=f"output/report_{key}_{value}.docx"
+        output_path=f"output/report_{key}_{value}.docx",
+        model_name=None,
+        use_gemini=False,
     )
     generator = DocumentGenerator(config)
     generator.generate_report()
