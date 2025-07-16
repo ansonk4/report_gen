@@ -3,7 +3,7 @@ import pandas as pd
 
 id_2_school = {
     10: "Tsuen Wan Government Secondary School",
-    11: "TWGHs Ng Siu Mui Memorial Secondary School",
+    11: "",
     12: "Buddhist Yip Kei Nam Memorial College",
     13: "Buddhist Sin Tak College",
     14: "Po Leung Kuk Lo Kit Sing (1983) College",
