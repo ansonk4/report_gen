@@ -27,6 +27,7 @@ class llm:
         if self.stop_all and output is False:
             return "[LLM OUTPUT PLACEHOLDER]"
 
+        print("Calling LLM")
         attempt = 0
         while attempt < self.max_retries:
             try:

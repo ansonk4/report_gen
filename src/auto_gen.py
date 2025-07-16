@@ -1,6 +1,5 @@
 from doc import Config, DocumentGenerator
 import pandas as pd
-from tqdm import tqdm
 
 id_2_school = {
     10: "Tsuen Wan Government Secondary School",
