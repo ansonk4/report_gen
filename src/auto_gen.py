@@ -69,20 +69,18 @@ df = pd.read_excel(path, header=2)
 interviewed_school_ids = set(df['school_id'].unique())
 
 start = 62
-target = [11, 16, 18, 22, 25, 28, 31, 36, 38, 50, 56,57, 59, 60, 61]
+
 for key, value in id_2_school.items():
     if key not in interviewed_school_ids:
         continue
-    # if key < start:
-    #     continue
-    if key not in target:
+    if key < start:
         continue
 
     config = Config(
-        school_id=key, 
-        school_name=value, 
+        school_id=None, 
+        school_name="All School", 
         general_data_path=path, 
-        output_path=f"output/report_{key}_{value}.docx",
+        output_path=f"output/report_{value}.docx",
         model_name=None,
         use_gemini=True,
     )

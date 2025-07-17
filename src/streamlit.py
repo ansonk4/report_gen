@@ -6,12 +6,283 @@ import tempfile
 import shutil
 from doc import DocumentGenerator, Config
 import logging
+import json
+from mapping import major_name_map, major_class_map, job_names, job_categories, job_code_to_category
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def main():
+def save_mapping_to_file(mapping_dict, mapping_name):
+    """Save mapping dictionary to mapping.py file"""
+    try:
+        # Read current mapping.py file
+        with open('mapping.py', 'r') as f:
+            content = f.read()
+        
+        # Create backup
+        with open('mapping.py.backup', 'w') as f:
+            f.write(content)
+        
+        # Update the specific mapping
+        if mapping_name == "major_name_map":
+            # Find and replace major_name_map
+            start_marker = "major_name_map = {"
+            end_marker = "}"
+            
+            start_idx = content.find(start_marker)
+            if start_idx != -1:
+                # Find the end of the dictionary
+                brace_count = 0
+                end_idx = start_idx + len(start_marker)
+                for i, char in enumerate(content[end_idx:]):
+                    if char == '{':
+                        brace_count += 1
+                    elif char == '}':
+                        if brace_count == 0:
+                            end_idx = end_idx + i + 1
+                            break
+                        brace_count -= 1
+                
+                # Create new mapping string
+                new_mapping = "major_name_map = {\n"
+                for code, name in sorted(mapping_dict.items()):
+                    new_mapping += f'    {code}: "{name}",\n'
+                new_mapping = new_mapping.rstrip(',\n') + '\n}'
+                
+                # Replace in content
+                content = content[:start_idx] + new_mapping + content[end_idx:]
+        
+        elif mapping_name == "job_names":
+            # Similar logic for job_names
+            start_marker = "job_names = {"
+            end_marker = "}"
+            
+            start_idx = content.find(start_marker)
+            if start_idx != -1:
+                # Find the end of the dictionary
+                brace_count = 0
+                end_idx = start_idx + len(start_marker)
+                for i, char in enumerate(content[end_idx:]):
+                    if char == '{':
+                        brace_count += 1
+                    elif char == '}':
+                        if brace_count == 0:
+                            end_idx = end_idx + i + 1
+                            break
+                        brace_count -= 1
+                
+                # Create new mapping string
+                new_mapping = "job_names = {\n"
+                for code, name in sorted(mapping_dict.items()):
+                    new_mapping += f'    {code}: "{name}",\n'
+                new_mapping = new_mapping.rstrip(',\n') + '\n}'
+                
+                # Replace in content
+                content = content[:start_idx] + new_mapping + content[end_idx:]
+        
+        # Write back to file
+        with open('mapping.py', 'w') as f:
+            f.write(content)
+        
+        return True
+    except Exception as e:
+        st.error(f"Error saving mapping: {str(e)}")
+        return False
+
+def mapping_editor_page():
+    """Page for editing mappings"""
+    st.title("🔧 Mapping Editor")
+    st.markdown("Edit the mappings used in the survey report generation.")
+    
+    # Tabs for different mappings
+    tab1, tab2, tab3 = st.tabs(["Major Names", "Job Names", "Job Categories"])
+    
+    with tab1:
+        st.header("Major Name Mapping")
+        st.markdown("Edit the mapping from major codes to major names.")
+        
+        # Convert to DataFrame for editing
+        major_df = pd.DataFrame(list(major_name_map.items()), columns=['Code', 'Name'])
+        
+        # Data editor
+        edited_major_df = st.data_editor(
+            major_df,
+            num_rows="dynamic",
+            use_container_width=True,
+            key="major_editor"
+        )
+        
+        col1, col2, col3 = st.columns([1, 1, 1])
+        
+        with col1:
+            if st.button("Save Major Mapping", type="primary"):
+                # Convert back to dictionary
+                new_mapping = dict(zip(edited_major_df['Code'], edited_major_df['Name']))
+                if save_mapping_to_file(new_mapping, "major_name_map"):
+                    st.success("Major mapping saved successfully!")
+                    st.rerun()
+        
+        with col2:
+            if st.button("Reset Major Mapping"):
+                st.rerun()
+        
+        with col3:
+            # Export as JSON
+            if st.button("Export as JSON"):
+                json_data = json.dumps(dict(zip(edited_major_df['Code'], edited_major_df['Name'])), indent=2)
+                st.download_button(
+                    label="Download JSON",
+                    data=json_data,
+                    file_name="major_mapping.json",
+                    mime="application/json"
+                )
+    
+    with tab2:
+        st.header("Job Name Mapping")
+        st.markdown("Edit the mapping from job codes to job names.")
+        
+        # Convert to DataFrame for editing
+        job_df = pd.DataFrame(list(job_names.items()), columns=['Code', 'Name'])
+        
+        # Data editor
+        edited_job_df = st.data_editor(
+            job_df,
+            num_rows="dynamic",
+            use_container_width=True,
+            key="job_editor"
+        )
+        
+        col1, col2, col3 = st.columns([1, 1, 1])
+        
+        with col1:
+            if st.button("Save Job Mapping", type="primary"):
+                # Convert back to dictionary
+                new_mapping = dict(zip(edited_job_df['Code'], edited_job_df['Name']))
+                if save_mapping_to_file(new_mapping, "job_names"):
+                    st.success("Job mapping saved successfully!")
+                    st.rerun()
+        
+        with col2:
+            if st.button("Reset Job Mapping"):
+                st.rerun()
+        
+        with col3:
+            # Export as JSON
+            if st.button("Export Job JSON"):
+                json_data = json.dumps(dict(zip(edited_job_df['Code'], edited_job_df['Name'])), indent=2)
+                st.download_button(
+                    label="Download JSON",
+                    data=json_data,
+                    file_name="job_mapping.json",
+                    mime="application/json"
+                )
+    
+    with tab3:
+        st.header("Job Categories")
+        st.markdown("View and edit job categories and their associated codes.")
+        
+        # Display job categories
+        for category, codes in job_categories.items():
+            with st.expander(f"{category} ({len(codes)} jobs)"):
+                # Show jobs in this category
+                category_jobs = [(code, job_names.get(code, "Unknown")) for code in codes]
+                category_df = pd.DataFrame(category_jobs, columns=['Code', 'Job Name'])
+                st.dataframe(category_df, use_container_width=True)
+        
+        # Add new category
+        st.subheader("Add New Category")
+        col1, col2 = st.columns(2)
+        with col1:
+            new_category_name = st.text_input("Category Name")
+        with col2:
+            new_category_codes = st.text_input("Job Codes (comma-separated)")
+        
+        if st.button("Add Category") and new_category_name and new_category_codes:
+            try:
+                codes = [int(code.strip()) for code in new_category_codes.split(',')]
+                st.success(f"Category '{new_category_name}' would be added with codes: {codes}")
+                st.info("Note: This is a preview. Actual implementation would require updating the mapping.py file.")
+            except ValueError:
+                st.error("Please enter valid numeric codes separated by commas.")
+    
+    # Import section
+    st.header("📥 Import Mappings")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.subheader("Import Major Mapping")
+        major_file = st.file_uploader("Upload Major Mapping JSON", type=['json'], key="major_upload")
+        if major_file:
+            try:
+                major_data = json.load(major_file)
+                # Convert string keys to int
+                major_data = {int(k): v for k, v in major_data.items()}
+                
+                st.json(major_data)
+                if st.button("Apply Major Import"):
+                    if save_mapping_to_file(major_data, "major_name_map"):
+                        st.success("Major mapping imported successfully!")
+                        st.rerun()
+            except Exception as e:
+                st.error(f"Error importing major mapping: {str(e)}")
+    
+    with col2:
+        st.subheader("Import Job Mapping")
+        job_file = st.file_uploader("Upload Job Mapping JSON", type=['json'], key="job_upload")
+        if job_file:
+            try:
+                job_data = json.load(job_file)
+                # Convert string keys to int
+                job_data = {int(k): v for k, v in job_data.items()}
+                
+                st.json(job_data)
+                if st.button("Apply Job Import"):
+                    if save_mapping_to_file(job_data, "job_names"):
+                        st.success("Job mapping imported successfully!")
+                        st.rerun()
+            except Exception as e:
+                st.error(f"Error importing job mapping: {str(e)}")
+    
+    # Backup and restore section
+    st.header("🔄 Backup & Restore")
+    
+    col1, col2 = st.columns(2)
+    
+    with col1:
+        st.subheader("Backup")
+        if st.button("Create Backup"):
+            try:
+                with open('mapping.py', 'r') as f:
+                    content = f.read()
+                
+                st.download_button(
+                    label="Download Backup",
+                    data=content,
+                    file_name="mapping_backup.py",
+                    mime="text/plain"
+                )
+                st.success("Backup created!")
+            except Exception as e:
+                st.error(f"Error creating backup: {str(e)}")
+    
+    with col2:
+        st.subheader("Restore")
+        restore_file = st.file_uploader("Upload Backup File", type=['py'], key="restore_upload")
+        if restore_file:
+            if st.button("Restore from Backup", type="secondary"):
+                try:
+                    content = restore_file.read().decode('utf-8')
+                    with open('mapping.py', 'w') as f:
+                        f.write(content)
+                    st.success("Mapping restored from backup!")
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Error restoring backup: {str(e)}")
+
+def main_report_page():
+    """Main report generation page"""
     st.title("📊 School Survey Report Generator")
     st.markdown("Generate comprehensive school survey reports with automatic analysis and visualizations.")
     
@@ -46,7 +317,6 @@ def main():
             model_name = st.sidebar.text_input("Model", value="mistralai/mistral-small-3.2-24b-instruct:free")
             if OPENROUTER_KEY:
                 os.environ["OPENROUTER_KEY"] = OPENROUTER_KEY
-
 
     # File paths
     with st.sidebar.expander("File and Output Paths", expanded=False):
@@ -219,6 +489,22 @@ def main():
         - Verify that the output directory exists or can be created
         - Make sure data files contain the expected columns and format
         """)
+
+def main():
+    """Main application with page navigation"""
+    
+    # Sidebar navigation
+    st.sidebar.title("📊 Navigation")
+    page = st.sidebar.radio(
+        "Go to",
+        ["📊 Report Generator", "🔧 Mapping Editor"],
+        key="main_navigation"
+    )
+    
+    if page == "📊 Report Generator":
+        main_report_page()
+    elif page == "🔧 Mapping Editor":
+        mapping_editor_page()
 
 if __name__ == "__main__":
     main()

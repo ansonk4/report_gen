@@ -446,7 +446,15 @@ class DocumentGenerator:
 
 def main():
     """Main function to run the document generator."""
-    config = Config()
+    path = "data/school_all.xlsx"
+    config = Config(
+        school_id=None, 
+        school_name="All School", 
+        general_data_path=path, 
+        output_path=f"output/report_all.docx",
+        model_name=None,
+        use_gemini=True,
+    )
     generator = DocumentGenerator(config)
     generator.generate_report()
 
