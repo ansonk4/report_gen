@@ -1,9 +1,5 @@
-import pandas as pd
+import yaml
+from mapping import get_job_class, get_major_class
 
-# Load the Excel file
-path = "data/school_all.xlsx"
-df = pd.read_excel(path, header=2)
-
-# Print all unique school_id values
-unique_ids = df['school_id'].unique()
-print(sorted(unique_ids))
+print(get_job_class("Architecture"))
+print(get_major_class(20))

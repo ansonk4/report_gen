@@ -80,9 +80,10 @@ for key, value in id_2_school.items():
         school_id=None, 
         school_name="All School", 
         general_data_path=path, 
-        output_path=f"output/report_{value}.docx",
+        output_path=f"output/report_test.docx",
         model_name=None,
         use_gemini=True,
+        use_llm=False
     )
     generator = DocumentGenerator(config)
     generator.generate_report()
