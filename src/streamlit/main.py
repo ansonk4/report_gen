@@ -1,17 +1,21 @@
 import streamlit as st
 import os
+import sys
 import pandas as pd
 from pathlib import Path
 import tempfile
 import shutil
-from doc import DocumentGenerator, Config
 import logging
+
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from doc import DocumentGenerator, Config
+from questionnaire_editor import mapping_editor_page
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def main():
+def report_generator_page():
     st.title("📊 School Survey Report Generator")
     st.markdown("Generate comprehensive school survey reports with automatic analysis and visualizations.")
     
@@ -220,5 +224,28 @@ def main():
         - Make sure data files contain the expected columns and format
         """)
 
+def main():
+    """Main function with page navigation."""
+    st.set_page_config(
+        page_title="School Survey Report System",
+        page_icon="📊",
+        layout="wide",
+        initial_sidebar_state="expanded"
+    )
+    
+    # Navigation
+    st.sidebar.title("Navigation")
+    page = st.sidebar.radio(
+        "Go to:",
+        ["📊 Report Generator", "🗂️ Mapping Editor"]
+    )
+    
+    # Route to appropriate page
+    if page == "📊 Report Generator":
+        report_generator_page()
+    elif page == "🗂️ Mapping Editor":
+        mapping_editor_page()
+
 if __name__ == "__main__":
     main()
+
