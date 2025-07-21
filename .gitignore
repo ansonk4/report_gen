@@ -30,4 +30,5 @@ htmlcov/
 *.db
 output/
 img/
+.claude/
 ~*
