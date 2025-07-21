@@ -10,6 +10,7 @@ import logging
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from doc import DocumentGenerator, Config
 from questionnaire_editor import mapping_editor_page
+import datetime
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -140,7 +141,8 @@ def report_generator_page():
     st.sidebar.subheader("Basic Information")
     school_name = st.sidebar.text_input("School Name", value="High School")
     school_id = st.sidebar.number_input("School ID", value=12, min_value=1, step=1)
-    year = st.sidebar.number_input("Survey Year", value=2025, min_value=2020, step=1)
+    current_year = datetime.datetime.now().year
+    year = st.sidebar.number_input("Survey Year", value=current_year, min_value=2020, step=1)
     
     with st.sidebar.expander("LLM Settings", expanded=False):
         # Use radio buttons to allow only one choice
