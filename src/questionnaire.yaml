@@ -1,5 +1,15 @@
-9.major influence: 1.personal_interests_A 2.institude_A 3.tuition_A 4.scholarrship_A
-  5.career_prospect_A 6.peers_and_teacher_A 7.family_A 8.salary_A 9.DSE_result_A 10.high_school_electives_A
+9.major_influence: 
+  1: personal_interests_A 
+  2: institute_A 
+  3: tuition_A 
+  4: scholarship_A
+  5: career_prospect_A 
+  6: peers_and_teacher_A
+  7: family_A 
+  8: salary_A 
+  9: DSE_result_A 
+  10: high_school_electives_A
+  
 11.major:
   1: Architecture
   2: Real Estate & Construction
@@ -73,7 +83,7 @@
   70: Game Design
   71: Urban Studies
   72: Others
-17.major:
+17.occupation_influence:
   1: personal_ability_B
   2: personal_interest_B
   3: sense_of_achievement_B

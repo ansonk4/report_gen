@@ -7,6 +7,7 @@ import prompt_template
 from typing import Dict, List, Any, Tuple
 from dataclasses import dataclass
 import logging
+import streamlit as st
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -125,12 +126,17 @@ class DocumentGenerator:
                 prompt_template.major_prompt(top_majors, top_dislike_majors)
             )
             # Plot major factor graph
-            major_factors = [
+            if "major_influence" in st.session_state:
+                major_factors = st.session_state["major_influence"]
+                major_factors = [s[:-2] if s is not None and s.endswith("_A") else s for s in major_factors if s is not None]
+            else:
+                major_factors = [
                 "personal_interests", "institute", "tuition",
                 "scholarship", "career_prospect", "peers_and_teacher",
                 "family", "salary", "DSE_result",
                 "high_school_electives"
             ]
+
             output_path = "img/major_factors.png"
             self._plot_factors_graph(major_factors, "Major Selection Factors", "_A", output_path)
             self.context["major_factors_graph"] = InlineImage(self.doc, output_path, width=Mm(150))
@@ -155,13 +161,16 @@ class DocumentGenerator:
             self.context["occupations_conclusion"] = self.llm.generate(
                 prompt_template.occupations_prompt(top_occupations, top_dislike_occupations)
             )
-             # Plot major factor graph
-            occupation_factors = [
-                "personal_ability", "personal_interest", "sense_of_achievement", "family",
-                "interpresonal_relationship", "job_nature", "remote_work", "worload",
-                "working_environment", "salary_and_benefit", "promotion_opportunites",
-                "career_prospect", "social_contribution", "social_status"
-            ]
+            if "occupation_influence" in st.session_state:
+                occupation_factors = st.session_state["occupation_influence"]
+                occupation_factors = [s[:-2] if s is not None and s.endswith("_B") else s for s in occupation_factors if s is not None]
+            else:
+                occupation_factors = [
+                    "personal_ability", "personal_interest", "sense_of_achievement", "family",
+                    "interpresonal_relationship", "job_nature", "remote_work", "worload",
+                    "working_environment", "salary_and_benefit", "promotion_opportunites",
+                    "career_prospect", "social_contribution", "social_status"
+                ]
             output_path = "img/occpuation_factors.png"
             self._plot_factors_graph(occupation_factors, "Occpuation Selection Factors", "_B", output_path)
             self.context["occupation_factors_graph"] = InlineImage(self.doc, output_path, width=Mm(150))
