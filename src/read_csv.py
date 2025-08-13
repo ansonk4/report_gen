@@ -122,16 +122,4 @@ class csv_reader:
                 ret[target_value] = dis[dis[target_col] == target_value]["percentage"].item()
 
         return ret
-        # return {target_value: dis[dis[target_col] == target_value]["percentage"].item() for target_value in target_values}
-
-
-    
-if __name__ == "__main__":
-    # csv_reader = csv_reader("data/2024 Final Data2.xlsx")
-    csv = csv_reader("data/2024 Final Data2.xlsx", 10)
-    gba_bus_major = csv.check_class_match("Business", "gba_understanding", major=True)
-    gba_sci_major = csv.check_class_match("Science", "gba_understanding", major=True)
-    print
-
-
 

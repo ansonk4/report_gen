@@ -28,6 +28,7 @@ htmlcov/r
 # Others
 *.sqlite3
 *.db
+data/
 output/
 img/
 .claude/

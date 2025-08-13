@@ -177,6 +177,26 @@ def report_generator_page():
 
     # File upload section
     st.header("📁 File Upload")
+    
+    # Sample data download section
+    with st.expander("📥 Download Sample Data", expanded=False):
+        col_sample1, col_sample2 = st.columns([1, 3])
+        
+        with col_sample1:
+            sample_data_path = "sample_data/sample_data.xlsx"
+            if os.path.exists(sample_data_path):
+                with open(sample_data_path, "rb") as sample_file:
+                    st.download_button(
+                        label="📥 Download Sample Excel",
+                        data=sample_file.read(),
+                        file_name="sample_data.xlsx",
+                        mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                        help="Download a sample Excel file with the correct format and required columns"
+                    )
+        
+        with col_sample2:
+            st.info("💡 **Tip:** Download the sample Excel file to see the expected format and required columns for your data file.")
+    
     col1, col2 = st.columns(2)
     
     with col1:
@@ -301,17 +321,19 @@ def report_generator_page():
     
     with st.expander("How to Use This App"):
         st.markdown("""
-        1. **Configure Settings**: Enter your school information and file paths in the sidebar
-        2. **Upload Files**: Upload your Word template and Excel data files
-        3. **Validate**: Check that all required files are available
-        4. **Generate**: Click the "Generate Report" button to create your report
-        5. **Download**: Download the generated report and view the visualizations
+        1. **Download Sample**: Download the sample Excel file to understand the required format
+        2. **Configure Settings**: Enter your school information and file paths in the sidebar
+        3. **Upload Files**: Upload your Word template and Excel data files
+        4. **Validate**: Check that all required files are available
+        5. **Generate**: Click the "Generate Report" button to create your report
+        6. **Download**: Download the generated report and view the visualizations
         """)
     
     with st.expander("File Requirements"):
         st.markdown("""
+        - **Sample Data**: Use the sample Excel file as a reference for the correct format
         - **Template File**: Word document (.docx) with placeholders for data
-        - **Data File**: Excel file (.xlsx) containing survey data
+        - **Data File**: Excel file (.xlsx) containing survey data with all required columns
         - **School Data File**: Optional Excel file with school-specific data
         """)
     
