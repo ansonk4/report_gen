@@ -21,7 +21,7 @@ venv/
 *.log
 
 # Test output
-htmlcov/
+htmlcov/r
 .coverage
 .tox/
 

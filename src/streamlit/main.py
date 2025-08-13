@@ -8,7 +8,7 @@ import shutil
 import logging
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from doc import DocumentGenerator, Config
+from document_generator import DocumentGenerator, Config
 from questionnaire_editor import mapping_editor_page
 import datetime
 
@@ -181,7 +181,7 @@ def report_generator_page():
     
     with col1:
         st.subheader("Template File")
-        template_file = st.file_uploader("Upload Word Template (.docx) (Optional)", type=['docx'])
+        template_file = st.file_uploader("Upload Word Template (.docx) **(Optional)**", type=['docx'])
         if template_file:
             st.success("Template file uploaded successfully!")
     
