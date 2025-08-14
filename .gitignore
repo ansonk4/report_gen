@@ -32,4 +32,5 @@ data/
 output/
 img/
 .claude/
+.devcontainer
 ~*
