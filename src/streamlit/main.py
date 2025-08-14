@@ -78,32 +78,12 @@ def report_generator_page():
             st.success("Data file uploaded successfully!")
 
 
-# Required columns for the Excel data file
-REQUIRED_EXCEL_COLUMNS = [
-    "school_id", "id", "banding", "gender", "elective", "chinese_reuslt", "english_result", "math_result",
-    "parent_education", "uni", "asso", "diploma", "high_dip", "work", "working_hoilday", "other", "future_plan",
-    "HK", "China", "Asia", "US/EU/AUS", "working_location",
-    "personal_interests_A", "institute_A", "tuition_A", "scholarship_A", "career_prospect_A",
-    "peers_and_teacher_A", "family_A", "salary_A", "DSE_result_A", "high_school_electives_A",
-    "target_major1", "target_major2", "target_major3", "elective_major_relation",
-    "dislike_major1", "dislike_major2", "dislike_major3",
-    "stem_participation", "leadership", "teamwork", "creativity", "sci_knowledge", "problem_solving",
-    "personal_ability_B", "personal_interest_B", "sense_of_achievement_B", "family_B",
-    "interpresonal_relationship_B", "job_nature_B", "remote_work_B", "worload_B", "working_environment_B",
-    "salary_and_benefit_B", "promotion_opportunites_B", "career_prospect_B", "social_contribution_B", "social_status_B",
-    "major_career_relation", "target_occupation1", "target_occupation2", "target_occupation3",
-    "dislike_occupation1", "dislike_occupation2", "dislike_occupation3",
-    "gba_understanding",
-    "stress_lv", "stress_scource", "family_expectations", "comparison", "tight_schedule", "test_scores",
-    "relationships", "prospect", "expectation", "long_term_solitude", "covid_19", "unstable_class", "transfer_exam",
-    "endure_lv", "exercise", "family_communication", "friends_communication", "social_workers", "restructuring_ttb",
-    "video_games", "sleep", "music", "no_idea"
-]
+
 
 @st.cache_data(show_spinner="Checking Excel format...")
 def validate_excel_and_get_path(uploaded_file_bytes):
     """
-    Validates the uploaded Excel file's columns and saves it to a temporary path.
+    Validates the uploaded Excel file's columns and converts it using DataConverter.
     Returns the temporary path if valid, otherwise None.
     """
     if not uploaded_file_bytes:
@@ -115,18 +95,33 @@ def validate_excel_and_get_path(uploaded_file_bytes):
         tmp.write(uploaded_file_bytes)
 
     try:
-        df_col = set(pd.read_excel(temp_path, header=2).columns)
-        missing_col = [col for col in REQUIRED_EXCEL_COLUMNS if col not in df_col]
-
+        # Use DataConverter to check if all required columns exist
+        converter = DataConverter(temp_path)
+        missing_col = converter.check_all_columns_exist()
+        
         if missing_col:
             st.warning("The following required columns are missing:")
             st.write(missing_col)
             os.remove(temp_path) # Clean up the temp file if validation fails
             return None, False
         else:
-            return temp_path, True
+            # Convert column names and values
+            converter.convert_all()
+            converter.convert_columns_name()
+            st.write(converter.df.head(5))
+
+            # Save the converted data to a new temporary file
+            converted_fd, converted_path = tempfile.mkstemp(suffix=".xlsx")
+            os.close(converted_fd)  # Close the file descriptor as pandas will handle the file
+            converter.df.to_excel(converted_path, index=False)
+            
+            # Clean up the original temp file
+            os.remove(temp_path)
+            
+            return converted_path, True
+
     except Exception as e:
-        st.error(f"Error reading Excel file: {e}")
+        st.error(f"Error processing Excel file: {e}")
         if os.path.exists(temp_path):
             os.remove(temp_path)
         return None, False
@@ -233,6 +228,13 @@ def report_generator_page():
             del st.session_state.excel_columns_validated_ok
 
     if excel_format_ok and temp_data_path_for_report and os.path.exists(temp_data_path_for_report):
+        # Display first 5 rows of the converted data
+        with st.expander("📊 Data Preview (First 5 Rows)", expanded=False):
+            try:
+                df_preview = pd.read_excel(temp_data_path_for_report)
+            except Exception as e:
+                st.warning(f"Could not display data preview: {e}")
+        
         # Generate report button
         st.header("🚀 Generate Report")
         
@@ -243,8 +245,7 @@ def report_generator_page():
                     # The temp_data_path_for_report is already validated and persisted by the cached function.
                     
                     # Ensure output directory exists
-                    os.makedirs(os.path.dirname(output_path), exist_ok=True)
-                    
+                    os.makedirs(os.path.dirname(output_path), exist_ok=True)                 
                     # Ensure image directory exists
                     os.makedirs(image_dir, exist_ok=True)
                     
@@ -315,6 +316,7 @@ def report_generator_page():
                     # Show detailed error in expander
                     with st.expander("Show Error Details"):
                         st.code(str(e))
+
     elif data_file: # Only show this warning if a file was uploaded but not valid
         st.warning("Please correct the Excel file format before generating the report.")
     

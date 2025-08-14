@@ -18,18 +18,14 @@ class DataConverter:
         return None
 
     def _convert_data(self, column_name: list[str] | str, mapping: dict[str|int, str]) -> None:
-        """
-        Convert the specified columns of the DataFrame using the provided mapping.
-
-        :param column_name: The name(s) of the column(s) to convert.
-        :param mapping: A dictionary mapping old values to new values.
-        """
         if isinstance(column_name, str):
             column_name = [column_name]
 
         for col in column_name:
-            if col in self.df.columns:
-                self.df[col] = self.df[col].map(mapping)
+            if col not in self.df.columns:
+                raise ValueError(f"Missing columns: {col}")
+            self.df[col] = self.df[col].replace(mapping)
+            
 
     def convert_all(self):
         """
@@ -39,7 +35,7 @@ class DataConverter:
         self._convert_data('性別', {'男': 1, '女': 2})
         self._convert_data("高中選修學科", {'理科': 1, '商科': 2, '理商科': 3, '文科': 4, '文理科': 5, '文商科': 6, '文理商科': 7})
         self._convert_data(["中文成績", "英文成績", "數學成績"], {"< 25 分": 1, "25-49 分": 2, "50-75 分": 3, "> 75 分": 4})
-        self._convert_data('父母教育程度', {'小學': 1, '初中': 2, "高中": 3, "預科": 4, '大專': 5, '大學': 6, "學士後課程或以上": 7})
+        self._convert_data('父母教育程度', {'小學': 1, '初中': 2, "高中": 3, "預科": 4, '大專 (非學士學位)': 5, '大學': 6, "學士後課程或以上": 7})
         self._convert_data("試後計劃", {"進修": 1, "工作": 2, "進修及工作": 3, "其他": 4})
         self._convert_data("工作地方", {'香港': 1, '內地': 2, '國外 - 亞洲': 3, '國外 - 歐美澳': 4})
         self._convert_data(
@@ -52,7 +48,7 @@ class DataConverter:
             {"顯著提升": 1, "部分提升": 2, "較少提升": 3, "沒有提升": 4}
         )
         self._convert_data(
-            ["個人能力_B", "興趣性格_B", "成就感_B", "家庭因素_B", "人際關係_B", "工作性質_B",
+            ["個人能力_B", "個人興趣性格_B", "成就感_B", "家庭因素_B", "人際關係_B", "工作性質_B",
             "工作模式_B", "工作量_B", "工作環境_B", "薪水及褔利_B", "晉升機會_B", "發展前景_B",
             "社會貢獻_B", "社會地位_B"],
             {"十分重要": 1, "重要": 2, "不太重要": 3, "不重要": 4}
@@ -60,21 +56,18 @@ class DataConverter:
         self._convert_data("大灣區了解", {"完全不了解": 1, "不太了解": 2, "了解": 3, "非常了解": 4})
         self._convert_data("壓力程度", {"完全沒有": 1, "較少": 2, "少": 3, "大": 4, "較大": 5, "非常大": 6})
         self._convert_data("壓力來源", {"個人因素": 1, "外在因素": 2})
-        self._convert_data("承受壓力", {"完全能夠": 1, "大部分不能": 2, "大部分能夠": 3, "完全能夠": 4})
-        self._convert_data("做運動", {"從不": 1, "偶爾": 2, "經常": 3, "每天": 4})
+        self._convert_data("承受壓力", {"完全不能": 1, "大部分不能": 2, "大部分能夠": 3, "完全能夠": 4})
 
         self._convert_data(
             ["希望修讀", "希望修讀_A", "希望修讀_B",
             "不希望修讀", "不希望修讀_A", "不希望修讀_B",], 
-            self.read_major_yaml("11.major", "src/questionnaire.yaml")
+            self.read_major_yaml("major", "src/major_job_zh.yaml")
         )
         self._convert_data(
             ["希望從事", "希望從事_A", "希望從事_B",
             "不希望從事", "不希望從事_A", "不希望從事_B"], 
-            self.read_major_yaml("19.occupation", "src/questionnaire.yaml")
+            self.read_major_yaml("job", "src/major_job_zh.yaml")
         )
-
-
 
     def convert_columns_name(self):
         self.df.rename(columns=self.mapping, inplace=True)
@@ -87,12 +80,12 @@ class DataConverter:
         """
         return [col for col in self.mapping if col not in self.df.columns]
         
-   
 
-# converter = DataConverter("sample_data/sample_data.xlsx")
-# converter.convert_columns_name()
-# converter.convert_all()
-# converter.df.to_excel("sample_data/converted_data.xlsx", index=False)
+if __name__ == "__main__":
+    converter = DataConverter("sample_data/sample_ppt.xlsx")
+    converter.convert_all()
+    converter.convert_columns_name()
+    converter.df.to_excel("sample_data/converted_data.xlsx", index=False)
 
 # df = pd.read_excel("sample_data/sample_data.xlsx")
 # map = {col: df.iloc[0][col] for col in df.columns if pd.notna(df.iloc[0][col]) and str(df.iloc[0][col]).strip() != ""}

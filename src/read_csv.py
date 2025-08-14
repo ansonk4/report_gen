@@ -4,7 +4,7 @@ from mapping import get_major_name, get_major_class, get_job_name, get_job_class
 
 class csv_reader:
     def __init__(self, path:str, school_id=None) -> pd.DataFrame:
-        df = pd.read_excel(path, header=2)
+        df = pd.read_excel(path)
 
         df = df.apply(lambda x: pd.to_numeric(x, errors='coerce'))
         df = df.replace(999, np.nan)
