@@ -82,7 +82,7 @@ class DataConverter:
         
 
 if __name__ == "__main__":
-    converter = DataConverter("sample_data/sample_ppt.xlsx")
+    converter = DataConverter("sample_data/sample_data.xlsx")
     converter.convert_all()
     converter.convert_columns_name()
     converter.df.to_excel("sample_data/converted_data.xlsx", index=False)

@@ -28,6 +28,11 @@ def report_generator_page():
     st.sidebar.subheader("Basic Information")
     school_name = st.sidebar.text_input("School Name", value="High School")
     school_id = st.sidebar.number_input("School ID", value=12, min_value=1, step=1)
+    # Allow user to select all schools or a specific school
+    all_schools_option = st.sidebar.checkbox("All Schools", value=False)
+    if all_schools_option:
+        school_name = "All Schools"
+        school_id = None
     year = st.sidebar.number_input("Survey Year", value=2025, min_value=2020, step=1)
     
     with st.sidebar.expander("LLM Settings", expanded=False):
@@ -108,8 +113,7 @@ def validate_excel_and_get_path(uploaded_file_bytes):
             # Convert column names and values
             converter.convert_all()
             converter.convert_columns_name()
-            st.write(converter.df.head(5))
-
+            
             # Save the converted data to a new temporary file
             converted_fd, converted_path = tempfile.mkstemp(suffix=".xlsx")
             os.close(converted_fd)  # Close the file descriptor as pandas will handle the file
@@ -138,6 +142,11 @@ def report_generator_page():
     st.sidebar.subheader("Basic Information")
     school_name = st.sidebar.text_input("School Name", value="High School")
     school_id = st.sidebar.number_input("School ID", value=12, min_value=1, step=1)
+    # Allow user to select all schools or a specific school
+    all_schools_option = st.sidebar.checkbox("All Schools", value=False)
+    if all_schools_option:
+        school_name = "All Schools"
+        school_id = 0
     current_year = datetime.datetime.now().year
     year = st.sidebar.number_input("Survey Year", value=current_year, min_value=2020, step=1)
     
