@@ -60,10 +60,6 @@ class DataConverter:
         self._convert_data("壓力來源", {"個人因素": 1, "外在因素": 2})
         self._convert_data("承受壓力", {"完全不能": 1, "大部分不能": 2, "大部分能夠": 3, "完全能夠": 4})
 
-        st.write(
-            st.session_state.get("major", {})
-        )
-
         self._convert_data(
             ["希望修讀", "希望修讀_A", "希望修讀_B",
             "不希望修讀", "不希望修讀_A", "不希望修讀_B",], 

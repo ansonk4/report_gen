@@ -45,7 +45,7 @@ def insert_and_shift_keys(dictionary, new_key, new_value):
 def major_editor(yaml_data, yaml_data_zh):
     major_data = st.session_state["major"] if "major" in st.session_state else yaml_data.get("11.major", {})
     major_class = st.session_state["major_class"] if "major_class" in st.session_state else yaml_data.get("major_class", {})
-    # major_zh = st.session_state["major_zh"] if "major_zh" in st.session_state else yaml_data_zh.get("major", {})
+    major_zh = st.session_state["major_zh"] if "major_zh" in st.session_state else yaml_data_zh.get("major", {})
 
     col1, col2 = st.columns([1, 3])
     
@@ -58,7 +58,7 @@ def major_editor(yaml_data, yaml_data_zh):
         if st.button("Insert Major", key="add_major"):
             st.session_state["major"] = insert_and_shift_keys(major_data, new_major_code, new_major_name)
             st.session_state["major_class"] = insert_and_shift_keys(major_class, new_major_code, new_major_class)
-            # st.session_state["major_zh"] = insert_and_shift_keys(major_zh, new_major_code, new_major_zh)
+            st.session_state["major_zh"] = insert_and_shift_keys(major_zh, new_major_code, new_major_zh)
             st.rerun()
     
     with col2:
@@ -68,7 +68,7 @@ def major_editor(yaml_data, yaml_data_zh):
             df_majors = pd.DataFrame({
                 'Code': list(major_data.keys()), 
                 'Major': list(major_data.values()),
-                # 'Chinese Name': list(major_zh.values()),
+                'Chinese Name': list(major_zh.values()),
                 'Class': list(major_class.values()),
             })
             
@@ -84,16 +84,16 @@ def major_editor(yaml_data, yaml_data_zh):
                 # Convert back to dictionary
                 new_major_data = {}
                 new_major_class = {}
-                # new_major_zh = {}
+                new_major_zh = {}
                 for _, row in edited_majors.iterrows():
                     if pd.notna(row['Code']) and pd.notna(row['Major']) and pd.notna(row['Class']) and pd.notna(row['Chinese Name']):
                         new_major_data[int(row['Code'])] = str(row['Major'])
                         new_major_class[int(row['Code'])] = str(row['Class'])
-                        # new_major_zh[int(row['Code'])] = str(row['Chinese Name'])
+                        new_major_zh[int(row['Code'])] = str(row['Chinese Name'])
                 
                 st.session_state["major"] = new_major_data
                 st.session_state["major_class"] = new_major_class
-                # st.session_state["major_zh"] = new_major_zh
+                st.session_state["major_zh"] = new_major_zh
                 st.rerun()
 
 
@@ -112,7 +112,7 @@ def occupation_editor(yaml_data, yaml_data_zh):
         if st.button("Insert Occupation", key="add_occ"):
             st.session_state["occupation"] = insert_and_shift_keys(occupation_data, new_occ_code, new_occ_name)
             st.session_state["occupation_class"] = insert_and_shift_keys(occupation_class, new_occ_code, new_occ_class)
-            st.session_state["occupation_zh"] = insert_and_shift_keys(occupation_zh, new_occ_code, new_occ_zh)
+            st.session_state["job_zh"] = insert_and_shift_keys(occupation_zh, new_occ_code, new_occ_zh)
             st.rerun()
 
     with col2:
@@ -147,7 +147,7 @@ def occupation_editor(yaml_data, yaml_data_zh):
 
                 st.session_state["occupation"] = new_occ_data
                 st.session_state["occupation_class"] = new_occ_class
-                st.session_state["occupation_zh"] = new_occ_zh
+                st.session_state["job_zh"] = new_occ_zh
                 st.rerun()
 
 def major_influence(yaml_data):

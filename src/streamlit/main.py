@@ -17,71 +17,6 @@ import datetime
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-def report_generator_page():
-    st.title("📊 School Survey Report Generator")
-    st.markdown("Generate comprehensive school survey reports with automatic analysis and visualizations.")
-    
-    # Sidebar for configuration
-    st.sidebar.header("Configuration Settings")
-    
-    # Basic settings
-    st.sidebar.subheader("Basic Information")
-    school_name = st.sidebar.text_input("School Name", value="High School")
-    school_id = st.sidebar.number_input("School ID", value=12, min_value=1, step=1)
-    # Allow user to select all schools or a specific school
-    all_schools_option = st.sidebar.checkbox("All Schools", value=False)
-    if all_schools_option:
-        school_name = "All Schools"
-        school_id = None
-    year = st.sidebar.number_input("Survey Year", value=2025, min_value=2020, step=1)
-    
-    with st.sidebar.expander("LLM Settings", expanded=False):
-        # Use radio buttons to allow only one choice
-        llm_choice = st.sidebar.radio(
-            "Choose LLM Provider",
-            ("Gemini (Require VPN)", "OpenRouter", "Disabled")
-        )
-
-        # Show API key input depending on choice
-        GEMINI_API_KEY = None
-        OPENROUTER_KEY = None
-        model_name = None
-
-        if llm_choice == "Gemini (Require VPN)":
-            GEMINI_API_KEY = st.sidebar.text_input("GEMINI_API_KEY")
-            model_name = st.sidebar.text_input("Model", value="gemini-2.5-flash")
-            if GEMINI_API_KEY:
-                os.environ["GEMINI_API_KEY"] = GEMINI_API_KEY
-        elif llm_choice == "OpenRouter":
-            OPENROUTER_KEY = st.sidebar.text_input("OPENROUTER_API_KEY")
-            model_name = st.sidebar.text_input("Model", value="mistralai/mistral-small-3.2-24b-instruct:free")
-            if OPENROUTER_KEY:
-                os.environ["OPENROUTER_KEY"] = OPENROUTER_KEY
-
-
-    # File paths
-    with st.sidebar.expander("File and Output Paths", expanded=False):
-        template_path = st.text_input("Template Path", value="doc/template.docx")
-        output_path = st.text_input("Output Path", value=f"output/report_{school_id}_{school_name}.docx")
-        image_dir = st.text_input("Image Directory", value="img")
-        general_data_path = None
-
-    # File upload section
-    st.header("📁 File Upload")
-    col1, col2 = st.columns(2)
-    
-    with col1:
-        st.subheader("Template File")
-        template_file = st.file_uploader("Upload Word Template (.docx) (Optional)", type=['docx'])
-        if template_file:
-            st.success("Template file uploaded successfully!")
-    
-    with col2:
-        st.subheader("Data File")
-        data_file = st.file_uploader("Upload Data File (.xlsx)", type=['xlsx'])
-        if data_file:
-            st.success("Data file uploaded successfully!")
-
 
 @st.cache_data(show_spinner="Checking Excel format...")
 def validate_excel_and_get_path(uploaded_file_bytes) -> tuple[str | None, bool]:
@@ -133,6 +68,10 @@ def report_generator_page():
     st.title("📊 School Survey Report Generator")
     st.markdown("Generate comprehensive school survey reports with automatic analysis and visualizations.")
     
+    # st.write(st.session_state.get("major_zh", "Major data not loaded. Please edit the questionnaire first."))
+    st.write(st.session_state.get("major", "Major data not loaded. Please edit the questionnaire first."))
+    st.write(st.session_state.get("major_zh", "Major data not loaded. Please edit the questionnaire first."))
+    
     # Sidebar for configuration
     st.sidebar.header("Configuration Settings")
     
@@ -152,7 +91,7 @@ def report_generator_page():
         # Use radio buttons to allow only one choice
         llm_choice = st.sidebar.radio(
             "Choose LLM Provider",
-            ("Gemini (Require VPN)", "OpenRouter", "Disabled")
+            ("Disabled", "Gemini (Require VPN)", "OpenRouter")
         )
 
         # Show API key input depending on choice
