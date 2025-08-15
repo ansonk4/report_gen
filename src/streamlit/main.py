@@ -83,10 +83,8 @@ def report_generator_page():
             st.success("Data file uploaded successfully!")
 
 
-
-
 @st.cache_data(show_spinner="Checking Excel format...")
-def validate_excel_and_get_path(uploaded_file_bytes):
+def validate_excel_and_get_path(uploaded_file_bytes) -> tuple[str | None, bool]:
     """
     Validates the uploaded Excel file's columns and converts it using DataConverter.
     Returns the temporary path if valid, otherwise None.
@@ -179,7 +177,7 @@ def report_generator_page():
         template_path = st.text_input("Template Path", value="doc/template.docx")
         output_path = st.text_input("Output Path", value=f"output/report_{school_id}_{school_name}.docx")
         image_dir = st.text_input("Image Directory", value="img")
-        general_data_path = None # This line can be removed as it's not used
+
 
     # File upload section
     st.header("📁 File Upload")
@@ -217,24 +215,8 @@ def report_generator_page():
 
     temp_data_path_for_report = None
     excel_format_ok = False
-
     if data_file:
-        if "data_file_bytes" not in st.session_state or st.session_state.data_file_bytes != data_file.getvalue():
-            st.session_state.data_file_bytes = data_file.getvalue()
-            st.session_state.temp_data_path_validated, st.session_state.excel_columns_validated_ok = \
-                validate_excel_and_get_path(st.session_state.data_file_bytes)
-        
-        temp_data_path_for_report = st.session_state.get("temp_data_path_validated")
-        excel_format_ok = st.session_state.get("excel_columns_validated_ok", False)
-    else:
-        if "data_file_bytes" in st.session_state:
-            del st.session_state.data_file_bytes
-        if "temp_data_path_validated" in st.session_state and st.session_state.temp_data_path_validated:
-            if os.path.exists(st.session_state.temp_data_path_validated):
-                os.remove(st.session_state.temp_data_path_validated)
-            del st.session_state.temp_data_path_validated
-        if "excel_columns_validated_ok" in st.session_state:
-            del st.session_state.excel_columns_validated_ok
+        temp_data_path_for_report, excel_format_ok = validate_excel_and_get_path(data_file.getvalue())
 
     if excel_format_ok and temp_data_path_for_report and os.path.exists(temp_data_path_for_report):
         # Display first 5 rows of the converted data
@@ -249,10 +231,7 @@ def report_generator_page():
         
         if st.button("Generate Report", use_container_width=True):
             with st.spinner("Generating report... This may take a few minutes."):
-                try:
-                    # Create temporary directory for template and final output if needed
-                    # The temp_data_path_for_report is already validated and persisted by the cached function.
-                    
+                try:                    
                     # Ensure output directory exists
                     os.makedirs(os.path.dirname(output_path), exist_ok=True)                 
                     # Ensure image directory exists

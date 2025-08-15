@@ -1,6 +1,7 @@
 import pandas as pd
 import numpy as np
 import yaml
+import streamlit as st
 
 class DataConverter:
     def __init__(self, file_path):
@@ -13,9 +14,10 @@ class DataConverter:
         with open(yaml_path, 'r', encoding='utf-8') as f:
             data = yaml.safe_load(f)
         major_dict = data.get(item)
-        if major_dict is not None:
-            return {v: k for k, v in major_dict.items()}
-        return None
+        return major_dict
+
+    def reverse_mapping(self, mapping: dict[str|int, str]) -> dict[str|int, str]:
+        return {v: k for k, v in mapping.items()}
 
     def _convert_data(self, column_name: list[str] | str, mapping: dict[str|int, str]) -> None:
         if isinstance(column_name, str):
@@ -58,15 +60,23 @@ class DataConverter:
         self._convert_data("壓力來源", {"個人因素": 1, "外在因素": 2})
         self._convert_data("承受壓力", {"完全不能": 1, "大部分不能": 2, "大部分能夠": 3, "完全能夠": 4})
 
+        st.write(
+            st.session_state.get("major", {})
+        )
+
         self._convert_data(
             ["希望修讀", "希望修讀_A", "希望修讀_B",
             "不希望修讀", "不希望修讀_A", "不希望修讀_B",], 
-            self.read_major_yaml("major", "src/major_job_zh.yaml")
+            self.reverse_mapping(
+                st.session_state.get("major_zh", self.read_major_yaml("major", "src/major_job_zh.yaml"))
+            )
         )
         self._convert_data(
             ["希望從事", "希望從事_A", "希望從事_B",
             "不希望從事", "不希望從事_A", "不希望從事_B"], 
-            self.read_major_yaml("job", "src/major_job_zh.yaml")
+            self.reverse_mapping(
+                st.session_state.get("job_zh", self.read_major_yaml("job", "src/major_job_zh.yaml"))
+            )
         )
 
     def convert_columns_name(self):
@@ -74,10 +84,6 @@ class DataConverter:
 
     
     def check_all_columns_exist(self) -> list[str]:
-        """
-        Check if all required columns exist in the DataFrame.
-        Returns a list of missing columns.
-        """
         return [col for col in self.mapping if col not in self.df.columns]
         
 

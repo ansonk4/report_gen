@@ -42,9 +42,10 @@ def insert_and_shift_keys(dictionary, new_key, new_value):
     dictionary.update(sorted_items)
     return dictionary
 
-def major_editor(yaml_data):
+def major_editor(yaml_data, yaml_data_zh):
     major_data = st.session_state["major"] if "major" in st.session_state else yaml_data.get("11.major", {})
     major_class = st.session_state["major_class"] if "major_class" in st.session_state else yaml_data.get("major_class", {})
+    # major_zh = st.session_state["major_zh"] if "major_zh" in st.session_state else yaml_data_zh.get("major", {})
 
     col1, col2 = st.columns([1, 3])
     
@@ -53,9 +54,11 @@ def major_editor(yaml_data):
         new_major_code = st.number_input("Code", min_value=1, step=1, key="new_major_code")
         new_major_name = st.text_input("Name", key="new_major_name")
         new_major_class = st.text_input("Class", key="new_major_class")
+        new_major_zh = st.text_input("Chinese Name", key="new_major_zh")
         if st.button("Insert Major", key="add_major"):
             st.session_state["major"] = insert_and_shift_keys(major_data, new_major_code, new_major_name)
             st.session_state["major_class"] = insert_and_shift_keys(major_class, new_major_code, new_major_class)
+            # st.session_state["major_zh"] = insert_and_shift_keys(major_zh, new_major_code, new_major_zh)
             st.rerun()
     
     with col2:
@@ -65,7 +68,8 @@ def major_editor(yaml_data):
             df_majors = pd.DataFrame({
                 'Code': list(major_data.keys()), 
                 'Major': list(major_data.values()),
-                'Class': list(major_class.values())
+                # 'Chinese Name': list(major_zh.values()),
+                'Class': list(major_class.values()),
             })
             
             # Use data editor for bulk editing
@@ -80,28 +84,35 @@ def major_editor(yaml_data):
                 # Convert back to dictionary
                 new_major_data = {}
                 new_major_class = {}
+                # new_major_zh = {}
                 for _, row in edited_majors.iterrows():
-                    if pd.notna(row['Code']) and pd.notna(row['Major']) and pd.notna(row['Class']):
+                    if pd.notna(row['Code']) and pd.notna(row['Major']) and pd.notna(row['Class']) and pd.notna(row['Chinese Name']):
                         new_major_data[int(row['Code'])] = str(row['Major'])
                         new_major_class[int(row['Code'])] = str(row['Class'])
-
+                        # new_major_zh[int(row['Code'])] = str(row['Chinese Name'])
+                
                 st.session_state["major"] = new_major_data
                 st.session_state["major_class"] = new_major_class
-                st.rerun() 
+                # st.session_state["major_zh"] = new_major_zh
+                st.rerun()
 
-def occupation_editor(yaml_data):
+
+def occupation_editor(yaml_data, yaml_data_zh):
     occupation_data = st.session_state["occupation"] if "occupation" in st.session_state else yaml_data.get("19.occupation", {})
     occupation_class = st.session_state["occupation_class"] if "occupation_class" in st.session_state else yaml_data.get("occupation_class", {})
+    occupation_zh = st.session_state.get("job_zh", yaml_data_zh.get("job", {}))
 
     col1, col2 = st.columns([1, 3])
     with col1:
         st.write("**Add New Occupation**")
         new_occ_code = st.number_input("Code", min_value=1, step=1, key="new_occ_code")
         new_occ_name = st.text_input("Name", key="new_occ_name")
+        new_occ_zh = st.text_input("Chinese Name", key="new_occ_zh")
         new_occ_class = st.text_input("Class", key="new_occ_class")
         if st.button("Insert Occupation", key="add_occ"):
             st.session_state["occupation"] = insert_and_shift_keys(occupation_data, new_occ_code, new_occ_name)
             st.session_state["occupation_class"] = insert_and_shift_keys(occupation_class, new_occ_code, new_occ_class)
+            st.session_state["occupation_zh"] = insert_and_shift_keys(occupation_zh, new_occ_code, new_occ_zh)
             st.rerun()
 
     with col2:
@@ -110,7 +121,8 @@ def occupation_editor(yaml_data):
             # Create a dataframe for editing
             df_occupations = pd.DataFrame({
                 'Code': list(occupation_data.keys()), 
-                'occupation': list(occupation_data.values()),
+                'Occupation': list(occupation_data.values()),
+                'Chinese Name': list(occupation_zh.values()),
                 'Class': list(occupation_class.values())
             })
             
@@ -126,15 +138,18 @@ def occupation_editor(yaml_data):
                 # Convert back to dictionary
                 new_occ_data = {}
                 new_occ_class = {}
+                new_occ_zh = {}
                 for _, row in edited_occupations.iterrows():
-                    if pd.notna(row['Code']) and pd.notna(row['occupation']) and pd.notna(row['Class']):
-                        new_occ_data[int(row['Code'])] = str(row['occupation'])
+                    if pd.notna(row['Code']) and pd.notna(row['Occupation']) and pd.notna(row['Class']):
+                        new_occ_data[int(row['Code'])] = str(row['Occupation'])
                         new_occ_class[int(row['Code'])] = str(row['Class'])
+                        new_occ_zh[int(row['Code'])] = str(row['Chinese Name'])
 
                 st.session_state["occupation"] = new_occ_data
                 st.session_state["occupation_class"] = new_occ_class
-                st.rerun() 
-    
+                st.session_state["occupation_zh"] = new_occ_zh
+                st.rerun()
+
 def major_influence(yaml_data):
     if "major_influence" in st.session_state:
         data = st.session_state["major_influence"]
@@ -178,6 +193,8 @@ def occupation_influence(yaml_data):
     if st.button("Update Occupation Influence Factor"):
         st.session_state["occupation_influence"] = list(edited_df["Occupation Influence"])
         st.rerun()
+
+
 def mapping_editor_page():
     """Page for editing the questionnaire mappings."""
     st.title("🗂️ Questionnaire Mapping Editor")
@@ -185,8 +202,9 @@ def mapping_editor_page():
     
     # Load current data
     yaml_data = load_questionnaire_yaml()
+    yaml_data_zh = load_questionnaire_yaml("src/major_job_zh.yaml")
 
-    if not yaml_data:
+    if not yaml_data or not yaml_data_zh:
         st.warning("Could not load questionnaire data. Please check if the file exists.")
         return
     
@@ -194,11 +212,11 @@ def mapping_editor_page():
     tab1, tab2, tab3, tab4 = st.tabs(["📚 Majors", "💼 Occupations", "9. Major Influence", "17. Occupation Influence"])
     
     with tab1:
-       major_editor(yaml_data)
+       major_editor(yaml_data, yaml_data_zh)
   
     with tab2:
-        occupation_editor(yaml_data)
-        
+        occupation_editor(yaml_data, yaml_data_zh)
+
     with tab3:
         major_influence(yaml_data)
 
