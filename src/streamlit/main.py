@@ -18,22 +18,61 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-@st.cache_data(show_spinner="Checking Excel format...")
+def display_validation_errors(validation_results: list[dict]) -> None:
+    st.error("❌ Invalid Data Found")
+    try:
+        for result_dict in validation_results:
+            if not result_dict:  # If the dictionary is not empty
+                continue
+            
+            for column, invalid_entries in result_dict.items():
+                if column == "acceptable_values":
+                    continue
+
+                st.write(f"**Column: {column}**")
+
+                display_entries = invalid_entries[:5]
+                
+                if display_entries:
+                    error_df = pd.DataFrame([
+                        {"Row Index": row_id, "Invalid Value": str(value)} 
+                        for row_id, value in display_entries
+                    ])
+
+                    st.write("**Acceptable Values:**", ", ".join(map(str, result_dict.get("acceptable_values", []))))
+
+                    st.dataframe(
+                        error_df, 
+                        use_container_width=True,
+                        hide_index=True
+                    )
+                    
+                    # Show count of remaining errors if any
+                    if len(invalid_entries) > 5:
+                        remaining = len(invalid_entries) - 5
+                        st.info(f"... and {remaining} more invalid entries in this column")
+                
+                st.write("---")
+
+        if all(not res for res in validation_results):
+            st.success("✅ No invalid data found!")
+        else:
+            st.warning("⚠️ Warning: Issues were found in your data. You may still proceed, the system will replace any invalid data with NA, but the presentation may not generate correctly.")
+
+        
+    except Exception as e:
+        st.error("An error occurred while displaying validation errors.")
+        st.write(traceback.format_exc())
+
 def validate_excel_and_get_path(uploaded_file_bytes) -> tuple[str | None, bool]:
-    """
-    Validates the uploaded Excel file's columns and converts it using DataConverter.
-    Returns the temporary path if valid, otherwise None.
-    """
     if not uploaded_file_bytes:
         return None, False
 
-    # Create a temporary file to hold the uploaded content
     temp_fd, temp_path = tempfile.mkstemp(suffix=".xlsx")
     with os.fdopen(temp_fd, "wb") as tmp:
         tmp.write(uploaded_file_bytes)
 
     try:
-        # Use DataConverter to check if all required columns exist
         converter = DataConverter(temp_path)
         missing_col = converter.check_all_columns_exist()
         
@@ -44,7 +83,8 @@ def validate_excel_and_get_path(uploaded_file_bytes) -> tuple[str | None, bool]:
             return None, False
         else:
             # Convert column names and values
-            converter.convert_all()
+            validate_result = converter.convert_all()
+            display_validation_errors(validate_result)
             converter.convert_columns_name()
             
             # Save the converted data to a new temporary file
@@ -63,14 +103,12 @@ def validate_excel_and_get_path(uploaded_file_bytes) -> tuple[str | None, bool]:
             os.remove(temp_path)
         return None, False
 
-
 def report_generator_page():
     st.title("📊 School Survey Report Generator")
     st.markdown("Generate comprehensive school survey reports with automatic analysis and visualizations.")
     
+    # st.write(st.session_state.get("major", "Major data not loaded. Please edit the questionnaire first."))
     # st.write(st.session_state.get("major_zh", "Major data not loaded. Please edit the questionnaire first."))
-    st.write(st.session_state.get("major", "Major data not loaded. Please edit the questionnaire first."))
-    st.write(st.session_state.get("major_zh", "Major data not loaded. Please edit the questionnaire first."))
     
     # Sidebar for configuration
     st.sidebar.header("Configuration Settings")
@@ -78,14 +116,18 @@ def report_generator_page():
     # Basic settings
     st.sidebar.subheader("Basic Information")
     school_name = st.sidebar.text_input("School Name", value="High School")
-    school_id = st.sidebar.number_input("School ID", value=12, min_value=1, step=1)
+    
     # Allow user to select all schools or a specific school
     all_schools_option = st.sidebar.checkbox("All Schools", value=False)
+    current_year = datetime.datetime.now().year
+    year = st.sidebar.number_input("Survey Year", value=current_year, min_value=2020, step=1)
+    
     if all_schools_option:
         school_name = "All Schools"
         school_id = 0
-    current_year = datetime.datetime.now().year
-    year = st.sidebar.number_input("Survey Year", value=current_year, min_value=2020, step=1)
+    else:
+        school_id = st.sidebar.number_input("School ID", value=12, min_value=1, step=1)
+
     
     with st.sidebar.expander("LLM Settings", expanded=False):
         # Use radio buttons to allow only one choice

@@ -19,61 +19,87 @@ class DataConverter:
     def reverse_mapping(self, mapping: dict[str|int, str]) -> dict[str|int, str]:
         return {v: k for k, v in mapping.items()}
 
-    def _convert_data(self, column_name: list[str] | str, mapping: dict[str|int, str]) -> None:
+    def _convert_data(self, column_name: list[str] | str, mapping: dict[str|int, str]) -> dict[str, list[tuple[int, str]]]:
         if isinstance(column_name, str):
             column_name = [column_name]
+
+        acceptable_values = set(mapping.keys()) | set([999])
+
+        result = {}
 
         for col in column_name:
             if col not in self.df.columns:
                 raise ValueError(f"Missing columns: {col}")
-            self.df[col] = self.df[col].replace(mapping)
-            
 
+            # check if the invalid values exist in the column
+            invalid_mask = ~self.df[col].isin(acceptable_values)
+            invalid_values = self.df[col][invalid_mask]
+            if not invalid_values.empty:
+                invalid_row_ids = self.df.index[invalid_mask].tolist()
+                result[col] = [(row_id, value) for row_id, value in zip(invalid_row_ids, invalid_values)]
+              
+            # replace invalid values with NaN
+            self.df.loc[invalid_mask, col] = np.nan
+
+            # convert valid values with the mapping
+            self.df[col] = self.df[col].replace(mapping)
+
+        
+        if result:
+            result["acceptable_values"] = acceptable_values
+
+        return result
+    
+    
     def convert_all(self):
         """
         Convert all relevant columns in the DataFrame to standardized formats.
         """
-        self._convert_data('Banding', {'Band 1': 1, 'Band 2': 2, 'Band 3': 3})
-        self._convert_data('性別', {'男': 1, '女': 2})
-        self._convert_data("高中選修學科", {'理科': 1, '商科': 2, '理商科': 3, '文科': 4, '文理科': 5, '文商科': 6, '文理商科': 7})
-        self._convert_data(["中文成績", "英文成績", "數學成績"], {"< 25 分": 1, "25-49 分": 2, "50-75 分": 3, "> 75 分": 4})
-        self._convert_data('父母教育程度', {'小學': 1, '初中': 2, "高中": 3, "預科": 4, '大專 (非學士學位)': 5, '大學': 6, "學士後課程或以上": 7})
-        self._convert_data("試後計劃", {"進修": 1, "工作": 2, "進修及工作": 3, "其他": 4})
-        self._convert_data("工作地方", {'香港': 1, '內地': 2, '國外 - 亞洲': 3, '國外 - 歐美澳': 4})
-        self._convert_data(
+        validation_result = []
+        
+        validation_result.append(self._convert_data('Banding', {'Band 1': 1, 'Band 2': 2, 'Band 3': 3}))
+        validation_result.append(self._convert_data('性別', {'男': 1, '女': 2}))
+        validation_result.append(self._convert_data("高中選修學科", {'理科': 1, '商科': 2, '理商科': 3, '文科': 4, '文理科': 5, '文商科': 6, '文理商科': 7}))
+        validation_result.append(self._convert_data(["中文成績", "英文成績", "數學成績"], {"< 25 分": 1, "25-49 分": 2, "50-75 分": 3, "> 75 分": 4}))
+        validation_result.append(self._convert_data('父母教育程度', {'小學': 1, '初中': 2, "高中": 3, "預科": 4, '大專 (非學士學位)': 5, '大學': 6, "學士後課程或以上": 7}))
+        validation_result.append(self._convert_data("試後計劃", {"進修": 1, "工作": 2, "進修及工作": 3, "其他": 4}))
+        validation_result.append(self._convert_data("工作地方", {'香港': 1, '內地': 2, '國外 - 亞洲': 3, '國外 - 歐美澳': 4}))
+        validation_result.append(self._convert_data(
             ["學科知識", "院校因素", "大學學費", "助學金", "主要行業", "朋輩老師", "家庭因素", "預期收入", "DSE成績", "高中選修科目"], 
             {"十分重要": 1, "重要": 2, "不太重要": 3, "不重要": 4}
-        )
-        self._convert_data("參加STEM", {'有': 1, '沒有': 2})
-        self._convert_data(
+        ))
+        validation_result.append(self._convert_data("參加STEM", {'有': 1, '沒有': 2}))
+        validation_result.append(self._convert_data(
             ["領導能力", "團隊合作", "創新思維", "科學知識", "解難能力"], 
-            {"顯著提升": 1, "部分提升": 2, "較少提升": 3, "沒有提升": 4}
-        )
-        self._convert_data(
+            {"顯著提升": 1, "部分提升": 2, "較少提升": 3, "沒有提升": 4, 0:0}
+        ))
+        validation_result.append(self._convert_data(
             ["個人能力_B", "個人興趣性格_B", "成就感_B", "家庭因素_B", "人際關係_B", "工作性質_B",
             "工作模式_B", "工作量_B", "工作環境_B", "薪水及褔利_B", "晉升機會_B", "發展前景_B",
             "社會貢獻_B", "社會地位_B"],
             {"十分重要": 1, "重要": 2, "不太重要": 3, "不重要": 4}
-        )
-        self._convert_data("大灣區了解", {"完全不了解": 1, "不太了解": 2, "了解": 3, "非常了解": 4})
-        self._convert_data("壓力程度", {"完全沒有": 1, "較少": 2, "少": 3, "大": 4, "較大": 5, "非常大": 6})
-        self._convert_data("壓力來源", {"個人因素": 1, "外在因素": 2})
-        self._convert_data("承受壓力", {"完全不能": 1, "大部分不能": 2, "大部分能夠": 3, "完全能夠": 4})
+        ))
+        validation_result.append(self._convert_data("大灣區了解", {"完全不了解": 1, "不太了解": 2, "了解": 3, "非常了解": 4}))
+        validation_result.append(self._convert_data("壓力程度", {"完全沒有": 1, "較少": 2, "少": 3, "大": 4, "較大": 5, "非常大": 6}))
+        validation_result.append(self._convert_data("壓力來源", {"個人因素": 1, "外在因素": 2}))
+        validation_result.append(self._convert_data("承受壓力", {"完全不能": 1, "大部分不能": 2, "大部分能夠": 3, "完全能夠": 4}))
 
-        self._convert_data(
+        validation_result.append(self._convert_data(
             ["希望修讀", "希望修讀_A", "希望修讀_B",
             "不希望修讀", "不希望修讀_A", "不希望修讀_B",], 
             self.reverse_mapping(
                 st.session_state.get("major_zh", self.read_major_yaml("major", "src/major_job_zh.yaml"))
             )
-        )
-        self._convert_data(
+        ))
+        validation_result.append(self._convert_data(
             ["希望從事", "希望從事_A", "希望從事_B",
             "不希望從事", "不希望從事_A", "不希望從事_B"], 
             self.reverse_mapping(
                 st.session_state.get("job_zh", self.read_major_yaml("job", "src/major_job_zh.yaml"))
             )
-        )
+        ))
+
+        return validation_result    
 
     def convert_columns_name(self):
         self.df.rename(columns=self.mapping, inplace=True)
