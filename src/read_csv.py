@@ -8,6 +8,7 @@ class csv_reader:
 
         df = df.apply(lambda x: pd.to_numeric(x, errors='coerce'))
         df = df.replace(999, np.nan)
+        df = df.replace("999", np.nan)
         
         if school_id:
             df = df.loc[df["school_id"] == school_id] 

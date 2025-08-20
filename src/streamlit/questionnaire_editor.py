@@ -43,6 +43,7 @@ def insert_and_shift_keys(dictionary, new_key, new_value):
     return dictionary
 
 def major_editor(yaml_data, yaml_data_zh):
+
     major_data = st.session_state["major"] if "major" in st.session_state else yaml_data.get("11.major", {})
     major_class = st.session_state["major_class"] if "major_class" in st.session_state else yaml_data.get("major_class", {})
     major_zh = st.session_state["major_zh"] if "major_zh" in st.session_state else yaml_data_zh.get("major", {})
@@ -51,10 +52,11 @@ def major_editor(yaml_data, yaml_data_zh):
     
     with col1:
         st.write("**Insert New Major**")
+        st.caption("**Major**: Name displayed in reports | **Chinese Name**: Text matched in Excel files")
         new_major_code = st.number_input("Code", min_value=1, step=1, key="new_major_code")
-        new_major_name = st.text_input("Name", key="new_major_name")
+        new_major_name = st.text_input("Major (for reports)", key="new_major_name")
         new_major_class = st.text_input("Class", key="new_major_class")
-        new_major_zh = st.text_input("Chinese Name", key="new_major_zh")
+        new_major_zh = st.text_input("Chinese Name (for Excel matching)", key="new_major_zh")
         if st.button("Insert Major", key="add_major"):
             st.session_state["major"] = insert_and_shift_keys(major_data, new_major_code, new_major_name)
             st.session_state["major_class"] = insert_and_shift_keys(major_class, new_major_code, new_major_class)
@@ -63,12 +65,14 @@ def major_editor(yaml_data, yaml_data_zh):
     
     with col2:
         st.write("**Edit Existing Majors**")
+        st.info("Press **Enter** after updating each cell!")
+        st.caption("**Major**: Name displayed in reports | **Chinese Name**: Text matched in Excel files")
         if major_data:
             # Create a dataframe for editing
             df_majors = pd.DataFrame({
                 'Code': list(major_data.keys()), 
-                'Major': list(major_data.values()),
-                'Chinese Name': list(major_zh.values()),
+                'Major (for reports)': list(major_data.values()),
+                'Chinese Name (for Excel matching)': list(major_zh.values()),
                 'Class': list(major_class.values()),
             })
             
@@ -86,10 +90,10 @@ def major_editor(yaml_data, yaml_data_zh):
                 new_major_class = {}
                 new_major_zh = {}
                 for _, row in edited_majors.iterrows():
-                    if pd.notna(row['Code']) and pd.notna(row['Major']) and pd.notna(row['Class']) and pd.notna(row['Chinese Name']):
-                        new_major_data[int(row['Code'])] = str(row['Major'])
+                    if pd.notna(row['Code']) and pd.notna(row['Major (for reports)']) and pd.notna(row['Class']) and pd.notna(row['Chinese Name (for Excel matching)']):
+                        new_major_data[int(row['Code'])] = str(row['Major (for reports)'])
                         new_major_class[int(row['Code'])] = str(row['Class'])
-                        new_major_zh[int(row['Code'])] = str(row['Chinese Name'])
+                        new_major_zh[int(row['Code'])] = str(row['Chinese Name (for Excel matching)'])
                 
                 st.session_state["major"] = new_major_data
                 st.session_state["major_class"] = new_major_class
@@ -105,9 +109,10 @@ def occupation_editor(yaml_data, yaml_data_zh):
     col1, col2 = st.columns([1, 3])
     with col1:
         st.write("**Add New Occupation**")
+        st.caption("**Occupation**: Name displayed in reports | **Chinese Name**: Text matched in Excel files")
         new_occ_code = st.number_input("Code", min_value=1, step=1, key="new_occ_code")
-        new_occ_name = st.text_input("Name", key="new_occ_name")
-        new_occ_zh = st.text_input("Chinese Name", key="new_occ_zh")
+        new_occ_name = st.text_input("Occupation (for reports)", key="new_occ_name")
+        new_occ_zh = st.text_input("Chinese Name (for Excel matching)", key="new_occ_zh")
         new_occ_class = st.text_input("Class", key="new_occ_class")
         if st.button("Insert Occupation", key="add_occ"):
             st.session_state["occupation"] = insert_and_shift_keys(occupation_data, new_occ_code, new_occ_name)
@@ -117,12 +122,14 @@ def occupation_editor(yaml_data, yaml_data_zh):
 
     with col2:
         st.write("**Edit Existing Occupations**")
+        st.info("Press **Enter** after updating each cell!")
+        st.caption("**Occupation**: Name displayed in reports | **Chinese Name**: Text matched in Excel files")
         if occupation_data:
             # Create a dataframe for editing
             df_occupations = pd.DataFrame({
                 'Code': list(occupation_data.keys()), 
-                'Occupation': list(occupation_data.values()),
-                'Chinese Name': list(occupation_zh.values()),
+                'Occupation (for reports)': list(occupation_data.values()),
+                'Chinese Name (for Excel matching)': list(occupation_zh.values()),
                 'Class': list(occupation_class.values())
             })
             
@@ -140,10 +147,10 @@ def occupation_editor(yaml_data, yaml_data_zh):
                 new_occ_class = {}
                 new_occ_zh = {}
                 for _, row in edited_occupations.iterrows():
-                    if pd.notna(row['Code']) and pd.notna(row['Occupation']) and pd.notna(row['Class']):
-                        new_occ_data[int(row['Code'])] = str(row['Occupation'])
+                    if pd.notna(row['Code']) and pd.notna(row['Occupation (for reports)']) and pd.notna(row['Class']) and pd.notna(row['Chinese Name (for Excel matching)']):
+                        new_occ_data[int(row['Code'])] = str(row['Occupation (for reports)'])
                         new_occ_class[int(row['Code'])] = str(row['Class'])
-                        new_occ_zh[int(row['Code'])] = str(row['Chinese Name'])
+                        new_occ_zh[int(row['Code'])] = str(row['Chinese Name (for Excel matching)'])
 
                 st.session_state["occupation"] = new_occ_data
                 st.session_state["occupation_class"] = new_occ_class
@@ -212,9 +219,11 @@ def mapping_editor_page():
     tab1, tab2, tab3, tab4 = st.tabs(["📚 Majors", "💼 Occupations", "9. Major Influence", "17. Occupation Influence"])
     
     with tab1:
-       major_editor(yaml_data, yaml_data_zh)
+        st.info("ℹ️ 'Major' fields are displayed in reports, while 'Chinese Name' fields are matched against Excel data files.")
+        major_editor(yaml_data, yaml_data_zh)
   
     with tab2:
+        st.info("ℹ️ 'Occupation' fields are displayed in reports, while 'Chinese Name' fields are matched against Excel data files.")
         occupation_editor(yaml_data, yaml_data_zh)
 
     with tab3:

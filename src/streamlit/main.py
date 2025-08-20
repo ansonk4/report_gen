@@ -168,7 +168,7 @@ def report_generator_page():
         col_sample1, col_sample2 = st.columns([1, 3])
         
         with col_sample1:
-            sample_data_path = "sample_data/sample_data.xlsx"
+            sample_data_path = "sample_data/sample.xlsx"
             if os.path.exists(sample_data_path):
                 with open(sample_data_path, "rb") as sample_file:
                     st.download_button(
@@ -294,28 +294,17 @@ def report_generator_page():
     
     with st.expander("How to Use This App"):
         st.markdown("""
-        1. **Download Sample**: Download the sample Excel file to understand the required format
-        2. **Configure Settings**: Enter your school information and file paths in the sidebar
-        3. **Upload Files**: Upload your Word template and Excel data files
-        4. **Validate**: Check that all required files are available
-        5. **Generate**: Click the "Generate Report" button to create your report
-        6. **Download**: Download the generated report and view the visualizations
+        1. Always start by downloading and examining the sample data file to understand the required format.
+        2. Ensure all required columns are present in your data file.
+        3. Follow the value validation rules for each column to avoid data processing errors.
+        4. Use the Questionnaire Editor to customize major and occupation mappings if needed.
         """)
     
-    with st.expander("File Requirements"):
+    with st.expander("Common Issues"):
         st.markdown("""
-        - **Sample Data**: Use the sample Excel file as a reference for the correct format
-        - **Template File**: Word document (.docx) with placeholders for data
-        - **Data File**: Excel file (.xlsx) containing survey data with all required columns
-        - **School Data File**: Optional Excel file with school-specific data
-        """)
-    
-    with st.expander("Troubleshooting"):
-        st.markdown("""
-        - Ensure all file paths are correct and files exist
-        - Check that the image directory exists and is writable
-        - Verify that the output directory exists or can be created
-        - Make sure data files contain the expected columns and format
+        - **Invalid Chinese Name for Major/Occupation**: Sometimes, majors or occupations in your Excel file may be flagged as invalid even if they appear correct. This often happens due to subtle differences in Chinese characters (e.g., `市埸營銷/公關` vs. `市場營銷/公關`). The system treats these as distinct values.
+
+        **Solution:** To avoid this issue, copy the major or occupation names directly from the README or the Questionnaire Editor to ensure consistency. You can also use the Questionnaire Editor to update and correct the mappings as needed.
         """)
 
 def main():
