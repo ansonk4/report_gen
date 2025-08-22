@@ -142,12 +142,12 @@ def report_generator_page():
         model_name = None
 
         if llm_choice == "Gemini (Require VPN)":
-            GEMINI_API_KEY = st.sidebar.text_input("GEMINI_API_KEY")
+            GEMINI_API_KEY = st.sidebar.text_input("GEMINI_API_KEY", help="Leave empty to use default API key.")
             model_name = st.sidebar.text_input("Model", value="gemini-2.5-flash")
             if GEMINI_API_KEY:
                 os.environ["GEMINI_API_KEY"] = GEMINI_API_KEY
         elif llm_choice == "OpenRouter":
-            OPENROUTER_KEY = st.sidebar.text_input("OPENROUTER_API_KEY")
+            OPENROUTER_KEY = st.sidebar.text_input("OPENROUTER_API_KEY", help="Leave empty to use default API key.")
             model_name = st.sidebar.text_input("Model", value="mistralai/mistral-small-3.2-24b-instruct:free")
             if OPENROUTER_KEY:
                 os.environ["OPENROUTER_KEY"] = OPENROUTER_KEY

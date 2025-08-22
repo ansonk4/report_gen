@@ -3,7 +3,7 @@ import time
 from openai import OpenAI
 from dotenv import load_dotenv
 from google import genai
-from streamlit import st
+import streamlit as st
 
 class llm:
     def __init__(self, gemini=False, model_name=None, stop_all=False, max_retries=2, backoff=15):

@@ -39,8 +39,8 @@ The School Survey Report Generator can be used either through the online hosted 
     
     **LLM Settings**: Choose an AI provider for generating insights:
     - **Disabled (default):** No AI-generated insights will be included in the report.
-    - **Gemini:** Requires VPN connection and an API key. If you see an error in report generation after selecting Gemini, the default API key may have expired. Refer to the [LLM API Key](#llm-api-key) section for setup instructions.
-    - **OpenRouter:** Requires an API key. If you see an error in report generation after selecting OpenRouter, the default API key may have expired. Refer to the [LLM API Key](#llm-api-key) section for setup instructions.
+    - **Gemini:** Requires a VPN connection. If you leave `GEMINI_API_KEY` blank and `Model` as default value, the system will use the default API key and model. If report generation fails after selecting Gemini, the default API key or model may have expired. See the [LLM API Key](#llm-api-key) section for setup instructions.
+    - **OpenRouter:** If you leave `OPENROUTER_API_KEY` blank and `Model` as default value, the system will use the default API key and model. If report generation fails after selecting OpenRouter, the default API key or model may have expired. See the [LLM API Key](#llm-api-key) section for setup instructions.
 
     **File and Output Paths**: Optionally set custom locations for the template file, output report, and image directory.
 
@@ -84,10 +84,12 @@ The Questionnaire Editor allows you to customize the mappings used for majors an
    - Column names must end with '_B'.
    - Press Enter after updating each cell.
 
-### LLM API Key
+### LLM setup
 
 ### Gemini
 
+
+#### API Key setup
 1. Visit [Google Cloud Resource Manager](https://console.cloud.google.com/cloud-resource-manager) and create a new Google Cloud Project.
 2. Enable a VPN to access services outside Hong Kong.
 3. Go to [Google AI Studio API Keys](https://aistudio.google.com/apikey).
@@ -95,13 +97,22 @@ The Questionnaire Editor allows you to customize the mappings used for majors an
 5. Select your project and confirm to create the API key.
 6. Copy the generated API key and paste it into the LLM Settings section of the Streamlit page.
 
+#### Model setup
+1. Visit [Google AI Studio](https://ai.google.dev/gemini-api/docs/models)
+2. Copy the name of the model of your choices (e.g. `gemini-2.5-flash`) and paste it into the LLM Settings section of the Streamlit page.
+
 ### OpenRouter
 
+#### API Key setup
 1. Sign in at [OpenRouter](https://openrouter.ai/).
 2. Navigate to [API Keys Settings](https://openrouter.ai/settings/keys).
 3. Click `Create API Key`.
 4. Enter a name and confirm creation.
 5. Copy the API key and paste it into the LLM Settings section of the Streamlit page.
+
+#### Model setup
+1. Visit [OpenRouter](https://openrouter.ai/models) and find a free model.
+2. Copy its name (e.g. `openai/gpt-oss-20b:free`) and paste it into the LLM Settings section of the Streamlit page.
 
 **Optional:**  
 To change the default local API keys, create a `.env` file in your project directory with the following content:
