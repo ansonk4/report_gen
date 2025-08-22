@@ -121,24 +121,25 @@ GEMINI_API_KEY=[Your Gemini API Key]
 
 ### Common Issues
 
- - **Invalid Chinese Name for Major/Occupation**: Sometimes, majors or occupations in your Excel file may be flagged as invalid even if they appear correct. This often happens due to subtle differences in Chinese characters (e.g., `市埸營銷/公關` vs. `市場營銷/公關`). The system treats these as distinct values.
+- **Invalid Chinese Name for Major/Occupation**: Majors or occupations in your Excel file may be flagged as invalid due to subtle differences in Chinese characters (e.g., `市埸營銷/公關` vs. `市場營銷/公關`). The system treats these as distinct values.
 
-    **Solution:** To avoid this issue, copy the major or occupation names directly from the README or the Questionnaire Editor to ensure consistency. You can also use the Questionnaire Editor to update and correct the mappings as needed.
+    **Solution:** To ensure consistency, copy major or occupation names directly from the README or Questionnaire Editor. You can also use the Questionnaire Editor to update and correct mappings as needed.
 
-- **Error or missing LLM insight after selected to use Gemini/Openroutes**: After selected to use Gemini/Openroutes in LLM setting. There may be error message during report generation, or no error but the generated report have no LLM insight. 
-**Common Causes and Solutions:**
+- **LLM Insight Errors or Missing Output (Gemini/OpenRouter)**
 
-    1. **Invalid API key**  
-        *Solution:* Double-check that you have entered a valid API key in the LLM Settings section. If you are using a `.env` file, ensure the key is correct and matches the provider (Gemini or OpenRouter).
+    Common Causes and Solutions:
 
-    2. **No VPN when using Gemini**  
-        *Solution:* Gemini requires a VPN connection outside Hong Kong. Make sure your VPN is active before generating the report.
+    1. **Invalid API Key**  
+    *Solution:* Verify that your API key is correct in the LLM Settings section. If using a `.env` file, ensure the key matches the selected provider.
 
-    3. **Rate Limited: You are generating reports too frequently with Gemini/OpenRouter**  
-        *Solution:* Wait a few minutes or a day before trying again. If the issue persists, consider using a different API key or provider.
+    2. **VPN Required for Gemini**  
+    *Solution:* Gemini requires a VPN connection outside Hong Kong. Activate your VPN before generating the report.
 
-    4. **Invalid Model: The default model is not available anymore**  
-        *Solution:* Select a currently supported model. Refer to the Gemini/OpenRouter's documentation for available models and update your selection accordingly.
+    3. **Rate Limiting (Too Many Requests)**  
+    *Solution:* Wait a few minutes or try again later. If the issue persists, use a different API key or provider.
+
+    4. **Unavailable Model**  
+    *Solution:* Enter a supported model name in the 'Model' field in the sidebar. Refer to Gemini/OpenRouter documentation for available models and update your selection.
 
 ## Input Data Format
 

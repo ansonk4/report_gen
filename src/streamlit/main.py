@@ -302,9 +302,25 @@ def report_generator_page():
     
     with st.expander("Common Issues"):
         st.markdown("""
-        - **Invalid Chinese Name for Major/Occupation**: Sometimes, majors or occupations in your Excel file may be flagged as invalid even if they appear correct. This often happens due to subtle differences in Chinese characters (e.g., `市埸營銷/公關` vs. `市場營銷/公關`). The system treats these as distinct values.
+        - **Invalid Chinese Name for Major/Occupation**: Majors or occupations in your Excel file may be flagged as invalid due to subtle differences in Chinese characters (e.g., `市埸營銷/公關` vs. `市場營銷/公關`). The system treats these as distinct values.
 
-        **Solution:** To avoid this issue, copy the major or occupation names directly from the README or the Questionnaire Editor to ensure consistency. You can also use the Questionnaire Editor to update and correct the mappings as needed.
+            **Solution:** To ensure consistency, copy major or occupation names directly from the README or Questionnaire Editor. You can also use the Questionnaire Editor to update and correct mappings as needed.
+        
+        - **LLM Insight Errors or Missing Output (Gemini/OpenRouter)**
+
+            Common Causes and Solutions:
+
+            1. **Invalid API Key**  
+            *Solution:* Verify that your API key is correct in the LLM Settings section. If using a `.env` file, ensure the key matches the selected provider.
+
+            2. **VPN Required for Gemini**  
+            *Solution:* Gemini requires a VPN connection outside Hong Kong. Activate your VPN before generating the report.
+
+            3. **Rate Limiting (Too Many Requests)**  
+            *Solution:* Wait a few minutes or try again later. If the issue persists, use a different API key or provider.
+
+            4. **Unavailable Model**  
+            *Solution:* Enter a supported model name in the 'Model' field in the sidebar. Refer to Gemini/OpenRouter documentation for available models and update your selection.
         """)
 
 def main():

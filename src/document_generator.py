@@ -143,6 +143,7 @@ class DocumentGenerator:
 
         except Exception as e:
             logger.error(f"Error processing major preferences: {e}")
+            st.error(f"Error processing major preferences: {e}")
     
     def _process_occupations(self) -> None:
         """Process occupation preference data."""
@@ -177,6 +178,7 @@ class DocumentGenerator:
             
         except Exception as e:
             logger.error(f"Error processing occupation preferences: {e}")
+            st.error(f"Error processing occupation preferences: {e}")
         
     def _process_stem_analysis(self) -> None:
         """Process STEM-related analysis."""
@@ -213,6 +215,7 @@ class DocumentGenerator:
 
         except Exception as e:
             logger.error(f"Error processing STEM analysis: {e}")
+            st.error(f"Error processing STEM analysis: {e}")
     
     def _process_gba_analysis(self) -> None:
         """Process GBA (Global Business Administration) analysis."""
@@ -248,6 +251,7 @@ class DocumentGenerator:
             )
         except Exception as e:
             logger.error(f"Error processing GBA analysis: {e}")
+            st.error(f"Error processing GBA analysis: {e}")
 
     
     def _process_stress_analysis(self) -> None:
@@ -369,6 +373,7 @@ class DocumentGenerator:
             )
         except Exception as e:
             logger.error(f"Error processing stress sources: {e}")
+            st.error(f"Error processing stress sources: {e}")
     
     def _analyze_stress_levels(self) -> None:
         """Analyze stress level distribution."""
@@ -394,6 +399,7 @@ class DocumentGenerator:
             )
         except Exception as e:
             logger.error(f"Error processing stress level: {e}")
+            st.error(f"Error processing stress level: {e}")
         
     def _analyze_endurance_levels(self) -> None:
         """Analyze stress endurance levels."""
@@ -419,6 +425,7 @@ class DocumentGenerator:
             )
         except Exception as e:
             logger.error(f"Error processing stress endurance: {e}")
+            st.error(f"Error processing stress endurance: {e}")
 
     def _analyze_stress_methods(self) -> None:
         """Analyze stress management methods."""
@@ -441,6 +448,7 @@ class DocumentGenerator:
             )
         except Exception as e:
             logger.error(f"Error processing stress method: {e}")
+            st.error(f"Error processing stress method: {e}")
             
     def _format_percentages(self) -> None:
         """Format all float values as percentages."""

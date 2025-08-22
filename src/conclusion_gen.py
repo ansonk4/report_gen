@@ -3,6 +3,7 @@ import time
 from openai import OpenAI
 from dotenv import load_dotenv
 from google import genai
+from streamlit import st
 
 class llm:
     def __init__(self, gemini=False, model_name=None, stop_all=False, max_retries=2, backoff=15):
@@ -55,7 +56,7 @@ class llm:
                 attempt += 1
                 if attempt >= self.max_retries:
                     # Give up after last retry
-                    print(f"LLM call failed after {self.max_retries} attempts: {e}")
+                    st.error(f"{'Gemini' if self.gemini else 'Openrouter'} call failed: {e}")
                     return "[LLM OUTPUT PLACEHOLDER]"
                 time.sleep(self.backoff * attempt)  # simple exponential back‑off
 
