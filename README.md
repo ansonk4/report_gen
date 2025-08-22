@@ -45,7 +45,7 @@ The School Survey Report Generator can be used either through the online hosted 
     **File and Output Paths**: Optionally set custom locations for the template file, output report, and image directory.
 
 2. **File Upload**
-   - **Template File (Optional)**: Upload a custom Word template (.docx) if you want to use a different format than the default.
+   - **Template File (Optional)**: Upload a custom Word template (.docx) if you want to use a different format than [the default template](doc/template.docx). (Not recommended)
    - **Data File (Required)**: Upload your survey data in Excel format (.xlsx).
    - **Sample Data**: Download a sample Excel file to understand the required format and columns.
 
@@ -86,10 +86,9 @@ The Questionnaire Editor allows you to customize the mappings used for majors an
 
 ### LLM setup
 
-### Gemini
+#### Gemini
 
-
-#### API Key setup
+##### API Key setup
 1. Visit [Google Cloud Resource Manager](https://console.cloud.google.com/cloud-resource-manager) and create a new Google Cloud Project.
 2. Enable a VPN to access services outside Hong Kong.
 3. Go to [Google AI Studio API Keys](https://aistudio.google.com/apikey).
@@ -97,24 +96,24 @@ The Questionnaire Editor allows you to customize the mappings used for majors an
 5. Select your project and confirm to create the API key.
 6. Copy the generated API key and paste it into the LLM Settings section of the Streamlit page.
 
-#### Model setup
+##### Model setup
 1. Visit [Google AI Studio](https://ai.google.dev/gemini-api/docs/models)
 2. Copy the name of the model of your choices (e.g. `gemini-2.5-flash`) and paste it into the LLM Settings section of the Streamlit page.
 
-### OpenRouter
+#### OpenRouter
 
-#### API Key setup
+##### API Key setup
 1. Sign in at [OpenRouter](https://openrouter.ai/).
 2. Navigate to [API Keys Settings](https://openrouter.ai/settings/keys).
 3. Click `Create API Key`.
 4. Enter a name and confirm creation.
 5. Copy the API key and paste it into the LLM Settings section of the Streamlit page.
 
-#### Model setup
+##### Model setup
 1. Visit [OpenRouter](https://openrouter.ai/models) and find a free model.
 2. Copy its name (e.g. `openai/gpt-oss-20b:free`) and paste it into the LLM Settings section of the Streamlit page.
 
-**Optional:**  
+#### Optional:
 To change the default local API keys, create a `.env` file in your project directory with the following content:
 
 ```
