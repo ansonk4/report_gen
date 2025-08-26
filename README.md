@@ -24,7 +24,7 @@ If you prefer to run it locally, follow these steps:
 
 4. Run the Streamlit web interface:
    ```bash
-   streamlit run src/main/streamlit.py
+   streamlit run src/streamlit/main.py
    ```
 
 ## Usage
