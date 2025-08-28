@@ -2,6 +2,8 @@
 
 An automated system for generating comprehensive school survey reports based on student responses. This tool processes Excel survey data and produces formatted Word documents with statistical analysis, visualizations, and AI-generated insights.
 
+[中文版本 (Chinese Version)](README_zh_HK.md)
+
 ## Installation
 
 You can use the PPT Report Generator directly online at [https://pptgenerator-uqzlepmjiojt6h6mowtmk7.streamlit.app/](https://pptgenerator-uqzlepmjiojt6h6mowtmk7.streamlit.app/) and skip the following steps.
