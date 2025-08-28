@@ -41,8 +41,8 @@ The School Survey Report Generator can be used either through the online hosted 
     
     **LLM Settings**: Choose an AI provider for generating insights:
     - **Disabled (default):** No AI-generated insights will be included in the report.
-    - **Gemini:** Requires a VPN connection. If you leave `GEMINI_API_KEY` blank and `Model` as default value, the system will use the default API key and model. If report generation fails after selecting Gemini, the default API key or model may have expired. See the [LLM API Key](#llm-api-key) section for setup instructions.
-    - **OpenRouter:** If you leave `OPENROUTER_API_KEY` blank and `Model` as default value, the system will use the default API key and model. If report generation fails after selecting OpenRouter, the default API key or model may have expired. See the [LLM API Key](#llm-api-key) section for setup instructions.
+    - **Gemini:** Requires a VPN connection. If you leave `GEMINI_API_KEY` blank and `Model` as default value, the system will use the default API key and model. If report generation fails after selecting Gemini, the default API key or model may have expired. See the [LLM setup](#llm-setup) section for setup instructions.
+    - **OpenRouter:** If you leave `OPENROUTER_API_KEY` blank and `Model` as default value, the system will use the default API key and model. If report generation fails after selecting OpenRouter, the default API key or model may have expired. See the [LLM setup](#llm-setup) section for setup instructions.
 
     **File and Output Paths**: Optionally set custom locations for the template file, output report, and image directory.
 

@@ -39,8 +39,8 @@
     
     **LLM 設置**：選擇用於生成見解的 AI 提供商：
     - **禁用（默認）**：報告中將不包含 AI 生成的見解。
-    - **Gemini**：需要 VPN 連接。如果您將 `GEMINI_API_KEY` 留空並將 `Model` 設為默認值，系統將使用默認 API 密鑰和模型。如果選擇 Gemini 後報告生成失敗，則可能是默認 API 密鑰或模型已過期。請參閱 [LLM API 密鑰](#llm-api-密鑰) 部分了解設置說明。
-    - **OpenRouter**：如果您將 `OPENROUTER_API_KEY` 留空並將 `Model` 設為默認值，系統將使用默認 API 密鑰和模型。如果選擇 OpenRouter 後報告生成失敗，則可能是默認 API 密鑰或模型已過期。請參閱 [LLM API 密鑰](#llm-api-密鑰) 部分了解設置說明。
+    - **Gemini**：需要 VPN 連接。如果您將 `GEMINI_API_KEY` 留空並將 `Model` 設為默認值，系統將使用默認 API 密鑰和模型。如果選擇 Gemini 後報告生成失敗，則可能是默認 API 密鑰或模型已過期。請參閱 [LLM 設置](#LLM-設置) 部分了解設置說明。
+    - **OpenRouter**：如果您將 `OPENROUTER_API_KEY` 留空並將 `Model` 設為默認值，系統將使用默認 API 密鑰和模型。如果選擇 OpenRouter 後報告生成失敗，則可能是默認 API 密鑰或模型已過期。請參閱 [LLM 設置](#LLM-設置) 部分了解設置說明。
 
     **文件和輸出路徑**：可選地設置模板文件、輸出報告和圖像目錄的自定義位置。
 
@@ -110,7 +110,7 @@
 5. 複製 API 密鑰並粘貼到 Streamlit 頁面的 LLM 設置部分。
 
 ##### 模型設置
-1. 訪問 [OpenRouter](https://openrouter.ai/models) 並查找免費模型。
+1. 訪問 [OpenRouter](https://openrouter.ai/models) 並查找免費(`free`)模型。
 2. 複製其名稱（例如 `openai/gpt-oss-20b:free`）並粘貼到 Streamlit 頁面的 LLM 設置部分。
 
 #### 可選：
